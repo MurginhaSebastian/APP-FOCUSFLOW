@@ -37,7 +37,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.tooling.preview.Preview
 import coil.compose.AsyncImage
+import com.example.focusflow.ui.theme.FocusFlowTheme
 import com.example.focusflow.viewmodel.HomeViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -151,5 +153,13 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
         }
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+private fun SettingsScreenPreview() {
+    FocusFlowTheme {
+        SettingsScreen(onBack = {})
     }
 }

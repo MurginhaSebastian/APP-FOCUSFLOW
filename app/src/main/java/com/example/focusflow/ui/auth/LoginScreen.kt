@@ -32,6 +32,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.focusflow.viewmodel.AuthViewModel
+import androidx.compose.ui.tooling.preview.Preview
+import com.example.focusflow.ui.theme.FocusFlowTheme
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
@@ -152,5 +154,13 @@ fun LoginScreen(
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+private fun LoginScreenPreview() {
+    FocusFlowTheme {
+        LoginScreen(onLoginSuccess = {})
     }
 }

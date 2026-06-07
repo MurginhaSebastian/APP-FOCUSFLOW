@@ -35,6 +35,8 @@ import com.google.zxing.BinaryBitmap
 import com.google.zxing.MultiFormatReader
 import com.google.zxing.RGBLuminanceSource
 import com.google.zxing.common.HybridBinarizer
+import androidx.compose.ui.tooling.preview.Preview
+import com.example.focusflow.ui.theme.FocusFlowTheme
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 
@@ -115,13 +117,21 @@ fun QRScreen(modifier: Modifier = Modifier) {
             Text("  Leer desde galería", modifier = Modifier.padding(start = 8.dp))
         }
 
-        if (qrResult.isNotEmpty()) {
-            Spacer(modifier = Modifier.height(24.dp))
-            Text(
-                text = "Código: $qrResult",
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.primary
-            )
+            if (qrResult.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(24.dp))
+                Text(
+                    text = "Código: $qrResult",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = MaterialTheme.colorScheme.primary
+                )
+            }
         }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+private fun QRScreenPreview() {
+    FocusFlowTheme {
+        QRScreen()
     }
 }

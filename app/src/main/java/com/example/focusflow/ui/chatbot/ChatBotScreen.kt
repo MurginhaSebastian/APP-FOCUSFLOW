@@ -28,6 +28,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.tooling.preview.Preview
+import com.example.focusflow.ui.theme.FocusFlowTheme
 import com.google.zxing.BarcodeFormat
 import com.google.zxing.qrcode.QRCodeWriter
 
@@ -136,6 +138,14 @@ fun ChatBotScreen(modifier: Modifier = Modifier) {
                 style = MaterialTheme.typography.bodyMedium
             )
         }
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+private fun ChatBotScreenPreview() {
+    FocusFlowTheme {
+        ChatBotScreen()
     }
 }
 

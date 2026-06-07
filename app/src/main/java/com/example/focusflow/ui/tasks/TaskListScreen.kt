@@ -39,8 +39,11 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.focusflow.data.model.Routine
 import com.example.focusflow.data.model.Task
+import com.example.focusflow.ui.theme.FocusFlowTheme
 import com.example.focusflow.viewmodel.RoutineViewModel
 import com.example.focusflow.viewmodel.TaskViewModel
 import java.text.SimpleDateFormat
@@ -55,10 +58,35 @@ fun TaskListScreen(
 ) {
     val taskState by taskViewModel.uiState.collectAsState()
     val routineState by routineViewModel.uiState.collectAsState()
+
+    TaskListContent(
+        activeTasks = taskState.activeTasks,
+        pendingTasks = taskState.pendingTasks,
+        completedTasks = taskState.completedTasks,
+        allRoutines = routineState.routines,
+        isLoading = taskState.isLoading,
+        onAddRoutine = { name -> routineViewModel.createRoutine(name) },
+        onAddTask = { title, dueDate, routineId -> taskViewModel.createTask(title, "", dueDate, routineId) },
+        onComplete = { task -> taskViewModel.completeTask(task) },
+        modifier = modifier
+    )
+}
+
+@Composable
+fun TaskListContent(
+    activeTasks: List<Task>,
+    pendingTasks: List<Task>,
+    completedTasks: List<Task>,
+    allRoutines: List<Routine>,
+    isLoading: Boolean,
+    onAddRoutine: (String) -> Unit,
+    onAddTask: (title: String, dueDate: Long?, routineId: Int) -> Unit,
+    onComplete: (Task) -> Unit,
+    modifier: Modifier = Modifier
+) {
     var showAddOptions by remember { mutableStateOf(false) }
     var showAddRoutineDialog by remember { mutableStateOf(false) }
     var showAddTaskDialog by remember { mutableStateOf(false) }
-    val allRoutines = routineState.routines
 
     LazyColumn(
         modifier = modifier
@@ -90,10 +118,6 @@ fun TaskListScreen(
             }
         }
 
-        val activeTasks = taskState.activeTasks
-        val pendingTasks = taskState.pendingTasks
-        val completedTasks = taskState.completedTasks
-
         if (activeTasks.isNotEmpty()) {
             item {
                 Text(
@@ -109,7 +133,7 @@ fun TaskListScreen(
                     task = task,
                     color = Color(0xFF97E3F0),
                     showCompleteButton = true,
-                    onComplete = { taskViewModel.completeTask(task) }
+                    onComplete = { onComplete(task) }
                 )
             }
         }
@@ -156,7 +180,7 @@ fun TaskListScreen(
             }
         }
 
-        if (!taskState.isLoading && activeTasks.isEmpty() && pendingTasks.isEmpty()) {
+        if (!isLoading && activeTasks.isEmpty() && pendingTasks.isEmpty()) {
             item {
                 Spacer(modifier = Modifier.height(48.dp))
                 Column(
@@ -201,7 +225,7 @@ fun TaskListScreen(
         AddRoutineDialog(
             onDismiss = { showAddRoutineDialog = false },
             onConfirm = { name ->
-                routineViewModel.createRoutine(name)
+                onAddRoutine(name)
             }
         )
     }
@@ -211,7 +235,7 @@ fun TaskListScreen(
             routines = allRoutines,
             onDismiss = { showAddTaskDialog = false },
             onConfirm = { title, dueDate, routineId ->
-                taskViewModel.createTask(title, "", dueDate, routineId)
+                onAddTask(title, dueDate, routineId)
             }
         )
     }
@@ -333,5 +357,34 @@ private fun TaskCard(
                 }
             }
         }
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+private fun TaskListScreenPreview() {
+    FocusFlowTheme {
+        TaskListContent(
+            activeTasks = listOf(
+                Task(title = "Estudiar matemáticas", status = Task.STATUS_ACTIVE, dueDate = System.currentTimeMillis() + 3600000)
+            ),
+            pendingTasks = listOf(
+                Task(title = "Leer capítulo 5", status = Task.STATUS_PENDING, dueDate = System.currentTimeMillis() + 7200000),
+                Task(title = "Hacer ejercicio", status = Task.STATUS_PENDING),
+                Task(title = "Revisar correo", status = Task.STATUS_PENDING)
+            ),
+            completedTasks = listOf(
+                Task(title = "Desayuno saludable", status = Task.STATUS_COMPLETED, isCompleted = true),
+                Task(title = "Meditar 5 min", status = Task.STATUS_COMPLETED, isCompleted = true)
+            ),
+            allRoutines = listOf(
+                Routine(name = "Mañana", userId = "1"),
+                Routine(name = "Tarde", userId = "1")
+            ),
+            isLoading = false,
+            onAddRoutine = {},
+            onAddTask = { _, _, _ -> },
+            onComplete = {}
+        )
     }
 }

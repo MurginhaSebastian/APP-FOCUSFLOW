@@ -36,9 +36,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.focusflow.data.model.Task
+import com.example.focusflow.data.remote.WeatherInfo
+import com.example.focusflow.ui.theme.FocusFlowTheme
+import com.example.focusflow.viewmodel.HomeUiState
 import com.example.focusflow.viewmodel.HomeViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -66,6 +70,15 @@ fun HomeScreen(
         return
     }
 
+    HomeContent(state = state, onRefreshQuote = viewModel::refreshQuote, modifier = modifier)
+}
+
+@Composable
+fun HomeContent(
+    state: HomeUiState,
+    onRefreshQuote: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -195,7 +208,7 @@ fun HomeScreen(
                         color = MaterialTheme.colorScheme.onTertiaryContainer
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    TextButton(onClick = { viewModel.refreshQuote() }) {
+                    TextButton(onClick = { onRefreshQuote() }) {
                         Text(text = "Nueva frase", fontSize = 13.sp)
                     }
                 }
@@ -282,5 +295,40 @@ private fun PendingTaskItem(task: Task) {
                 fontSize = 16.sp
             )
         }
+    }
+}
+
+@Preview(showBackground = true, showSystemUi = true)
+@Composable
+private fun HomeScreenPreview() {
+    FocusFlowTheme {
+        HomeContent(
+            state = HomeUiState(
+                userName = "Sebastián",
+                photoUrl = "",
+                nextTask = Task(
+                    title = "Estudiar matemáticas",
+                    status = Task.STATUS_ACTIVE,
+                    dueDate = System.currentTimeMillis() + 3600000
+                ),
+                pendingTasks = listOf(
+                    Task(title = "Leer capítulo 5", status = Task.STATUS_PENDING, dueDate = System.currentTimeMillis() + 7200000),
+                    Task(title = "Hacer ejercicio", status = Task.STATUS_PENDING, dueDate = System.currentTimeMillis() + 10800000),
+                    Task(title = "Revisar correo", status = Task.STATUS_PENDING)
+                ),
+                totalTasks = 5,
+                completedTasks = 3,
+                progress = 0.6f,
+                quote = "El éxito es la suma de pequeños esfuerzos repetidos día tras día.",
+                weather = WeatherInfo(
+                    temp = "22",
+                    description = "Soleado",
+                    condition = "Clear",
+                    suggestedActivity = "Sal a caminar 15 minutos"
+                ),
+                isLoading = false
+            ),
+            onRefreshQuote = {}
+        )
     }
 }
