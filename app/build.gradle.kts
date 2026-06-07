@@ -82,6 +82,7 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.okhttp.logging)
+    implementation(libs.androidx.datastore.preferences)
 
     // Google Maps
     implementation(libs.maps.compose)

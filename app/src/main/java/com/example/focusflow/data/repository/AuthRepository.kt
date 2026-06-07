@@ -70,4 +70,8 @@ class AuthRepository @Inject constructor(
     fun getUserPhotoUrl(): String {
         return firebaseAuth.currentUser?.photoUrl?.toString() ?: ""
     }
+
+    fun getUserEmail(): String {
+        return firebaseAuth.currentUser?.email ?: ""
+    }
 }

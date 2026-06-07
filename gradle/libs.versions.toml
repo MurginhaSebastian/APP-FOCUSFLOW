@@ -16,6 +16,7 @@ hiltWork = "1.2.0"
 hiltNavigationCompose = "1.2.0"
 lifecycleViewmodelCompose = "2.8.0"
 navigationCompose = "2.8.0"
+datastorePreferences = "1.1.1"
 room = "2.6.1"
 firebaseAuth = "23.0.0"
 firebaseDatabase = "21.0.0"
@@ -60,6 +61,7 @@ androidx-navigation-compose = { group = "androidx.navigation", name = "navigatio
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 androidx-room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
 androidx-room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastorePreferences" }
 firebase-auth-ktx = { group = "com.google.firebase", name = "firebase-auth-ktx", version.ref = "firebaseAuth" }
 firebase-database-ktx = { group = "com.google.firebase", name = "firebase-database-ktx", version.ref = "firebaseDatabase" }
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }

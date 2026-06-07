@@ -7,6 +7,7 @@ import android.content.Context
 import android.os.Build
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import com.example.focusflow.viewmodel.StreakTracker
 import dagger.hilt.android.HiltAndroidApp
 import javax.inject.Inject
 
@@ -19,6 +20,7 @@ class FocusFlowApp : Application(), Configuration.Provider {
     override fun onCreate() {
         super.onCreate()
         createNotificationChannel()
+        StreakTracker.updateStreak(this)
     }
 
     private fun createNotificationChannel() {
