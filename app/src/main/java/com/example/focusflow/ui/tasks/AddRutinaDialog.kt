@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.dp
 import com.example.focusflow.ui.theme.FocusPrimary
 
 @Composable
-fun AddRoutineDialog(
+fun AddRutinaDialog(
     onDismiss: () -> Unit,
     onConfirm: (name: String) -> Unit
 ) {

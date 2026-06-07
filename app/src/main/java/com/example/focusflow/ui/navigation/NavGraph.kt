@@ -6,11 +6,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.example.focusflow.ui.auth.LoginScreen
 import com.example.focusflow.ui.splash.SplashScreen
+import com.example.focusflow.ui.tasks.MapPickerScreen
 
 object Routes {
     const val SPLASH = "splash"
     const val LOGIN = "login"
     const val MAIN = "main"
+    const val MAP_PICKER = "map_picker"
 }
 
 @Composable
@@ -51,6 +53,23 @@ fun NavGraph(navController: NavHostController) {
                     navController.navigate(Routes.LOGIN) {
                         popUpTo(Routes.MAIN) { inclusive = true }
                     }
+                },
+                onPickLocation = {
+                    navController.navigate(Routes.MAP_PICKER)
+                }
+            )
+        }
+
+        composable(Routes.MAP_PICKER) {
+            MapPickerScreen(
+                onLocationSelected = { address ->
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set("picked_location", address)
+                    navController.popBackStack()
+                },
+                onBack = {
+                    navController.popBackStack()
                 }
             )
         }

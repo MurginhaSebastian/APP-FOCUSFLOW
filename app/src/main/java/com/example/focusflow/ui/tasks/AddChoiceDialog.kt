@@ -22,8 +22,8 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun AddChoiceDialog(
     onDismiss: () -> Unit,
-    onAddRoutine: () -> Unit,
-    onAddTask: () -> Unit
+    onAddRutina: () -> Unit,
+    onAddTarea: () -> Unit
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -39,7 +39,7 @@ fun AddChoiceDialog(
         text = {
             Column(modifier = Modifier.fillMaxWidth()) {
                 Button(
-                    onClick = onAddRoutine,
+                    onClick = onAddRutina,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(30.dp),
                     colors = ButtonDefaults.buttonColors(
@@ -53,7 +53,7 @@ fun AddChoiceDialog(
                 Spacer(modifier = Modifier.height(12.dp))
 
                 Button(
-                    onClick = onAddTask,
+                    onClick = onAddTarea,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(30.dp),
                     colors = ButtonDefaults.buttonColors(

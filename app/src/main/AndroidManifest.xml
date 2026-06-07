@@ -32,6 +32,22 @@
             android:name=".ui.qr.QRScannerActivity"
             android:exported="false"
             android:theme="@style/Theme.FocusFlow" />
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyDR33k0gSWd0KOHk0vU04xOIS9xfmx2QRM" />
+
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="merge">
+            <!-- This entry disables the default WorkManagerInitializer -->
+            <meta-data
+                android:name="androidx.work.WorkManagerInitializer"
+                android:value="androidx.startup"
+                tools:node="remove" />
+        </provider>
     </application>
 
 </manifest>

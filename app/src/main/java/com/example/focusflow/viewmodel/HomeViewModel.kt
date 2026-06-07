@@ -2,12 +2,12 @@ package com.example.focusflow.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.focusflow.data.model.Task
+import com.example.focusflow.data.model.Tarea
 import com.example.focusflow.data.remote.QuoteRepository
 import com.example.focusflow.data.remote.WeatherInfo
 import com.example.focusflow.data.remote.WeatherRepository
 import com.example.focusflow.data.repository.AuthRepository
-import com.example.focusflow.data.repository.TaskRepository
+import com.example.focusflow.data.repository.TareaRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,10 +18,10 @@ import javax.inject.Inject
 data class HomeUiState(
     val userName: String = "",
     val photoUrl: String = "",
-    val nextTask: Task? = null,
-    val pendingTasks: List<Task> = emptyList(),
-    val totalTasks: Int = 0,
-    val completedTasks: Int = 0,
+    val nextTarea: Tarea? = null,
+    val pendingTareas: List<Tarea> = emptyList(),
+    val totalTareas: Int = 0,
+    val completedTareas: Int = 0,
     val progress: Float = 0f,
     val quote: String = "",
     val weather: WeatherInfo? = null,
@@ -31,7 +31,7 @@ data class HomeUiState(
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val authRepository: AuthRepository,
-    private val taskRepository: TaskRepository,
+    private val tareaRepository: TareaRepository,
     private val quoteRepository: QuoteRepository,
     private val weatherRepository: WeatherRepository
 ) : ViewModel() {
@@ -60,21 +60,21 @@ class HomeViewModel @Inject constructor(
 
         if (userId.isNotBlank()) {
             viewModelScope.launch {
-                taskRepository.getTasksByUser(userId).collect { tasks ->
-                    val totalTasks = tasks.size
-                    val completedTasks = tasks.count { it.isCompleted }
-                    val progress = if (totalTasks > 0) completedTasks.toFloat() / totalTasks else 0f
-                    val activeTasks = tasks.filter { it.status == Task.STATUS_ACTIVE }
-                    val pendingTasks = tasks
-                        .filter { it.status == Task.STATUS_PENDING }
+                tareaRepository.getTareasByUser(userId).collect { tareas ->
+                    val totalTareas = tareas.size
+                    val completedTareas = tareas.count { it.isCompleted }
+                    val progress = if (totalTareas > 0) completedTareas.toFloat() / totalTareas else 0f
+                    val activeTareas = tareas.filter { it.status == Tarea.STATUS_ACTIVE }
+                    val pendingTareas = tareas
+                        .filter { it.status == Tarea.STATUS_PENDING }
                         .sortedBy { it.dueDate ?: Long.MAX_VALUE }
 
                     _uiState.value = _uiState.value.copy(
-                        totalTasks = totalTasks,
-                        completedTasks = completedTasks,
+                        totalTareas = totalTareas,
+                        completedTareas = completedTareas,
                         progress = progress,
-                        nextTask = activeTasks.firstOrNull() ?: pendingTasks.firstOrNull(),
-                        pendingTasks = pendingTasks.take(5),
+                        nextTarea = activeTareas.firstOrNull() ?: pendingTareas.firstOrNull(),
+                        pendingTareas = pendingTareas.take(5),
                         isLoading = false
                     )
                 }

@@ -31,14 +31,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.example.focusflow.data.model.Task
+import com.example.focusflow.data.model.Tarea
 import com.example.focusflow.viewmodel.HomeViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -117,13 +116,13 @@ fun HomeScreen(
                         letterSpacing = 0.1.sp
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    if (state.nextTask != null) {
+                    if (state.nextTarea != null) {
                         Text(
-                            text = state.nextTask!!.title,
+                            text = state.nextTarea!!.title,
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold
                         )
-                        state.nextTask!!.dueDate?.let { dueDate ->
+                        state.nextTarea!!.dueDate?.let { dueDate ->
                             val dateFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())
                             Text(
                                 text = dateFormat.format(Date(dueDate)),
@@ -143,7 +142,7 @@ fun HomeScreen(
             }
         }
 
-        if (state.pendingTasks.isNotEmpty()) {
+        if (state.pendingTareas.isNotEmpty()) {
             item {
                 Text(
                     text = "Pendientes",
@@ -151,8 +150,8 @@ fun HomeScreen(
                     fontWeight = FontWeight.Bold
                 )
             }
-            items(state.pendingTasks) { task ->
-                PendingTaskItem(task = task)
+            items(state.pendingTareas) { tarea ->
+                PendingTareaItem(tarea = tarea)
             }
         }
 
@@ -173,7 +172,7 @@ fun HomeScreen(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "${state.completedTasks}/${state.totalTasks} tareas completadas",
+                    text = "${state.completedTareas}/${state.totalTareas} tareas completadas",
                     fontSize = 13.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -246,7 +245,7 @@ fun HomeScreen(
 }
 
 @Composable
-private fun PendingTaskItem(task: Task) {
+private fun PendingTareaItem(tarea: Tarea) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -262,13 +261,13 @@ private fun PendingTaskItem(task: Task) {
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = task.title,
+                    text = tarea.title,
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                task.dueDate?.let { dueDate ->
+                tarea.dueDate?.let { dueDate ->
                     val timeFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())
                     Text(
                         text = timeFormat.format(Date(dueDate)),

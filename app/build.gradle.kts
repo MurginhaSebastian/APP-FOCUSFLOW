@@ -63,6 +63,7 @@ dependencies {
 
     implementation("com.google.dagger:hilt-android:2.51.1")
     ksp("com.google.dagger:hilt-compiler:2.51.1")
+    ksp("androidx.hilt:hilt-compiler:1.3.0")
     implementation(libs.hilt.navigation.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.navigation.compose)
@@ -70,6 +71,7 @@ dependencies {
     implementation("androidx.room:room-ktx:2.6.1")
     ksp("androidx.room:room-compiler:2.6.1")
     implementation(libs.firebase.auth.ktx)
+    implementation(libs.firebase.database.ktx)
     implementation(libs.kotlinx.coroutines.android)
     implementation(platform("com.google.firebase:firebase-bom:33.8.0"))
 
@@ -80,4 +82,11 @@ dependencies {
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.okhttp.logging)
+
+    // Google Maps
+    implementation(libs.maps.compose)
+    implementation(libs.play.services.maps)
+    implementation(libs.play.services.location)
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.hilt.work)
 }

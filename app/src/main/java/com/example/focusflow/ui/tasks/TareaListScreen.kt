@@ -1,15 +1,6 @@
 package com.example.focusflow.ui.tasks
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,19 +9,8 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -40,25 +20,29 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.focusflow.data.model.Task
-import com.example.focusflow.viewmodel.RoutineViewModel
-import com.example.focusflow.viewmodel.TaskViewModel
+import com.example.focusflow.data.model.Tarea
+import com.example.focusflow.viewmodel.RutinaViewModel
+import com.example.focusflow.viewmodel.TareaViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
 @Composable
-fun TaskListScreen(
+fun TareaListScreen(
     modifier: Modifier = Modifier,
-    taskViewModel: TaskViewModel = hiltViewModel(),
-    routineViewModel: RoutineViewModel = hiltViewModel()
+    onPickLocation: () -> Unit,
+    tareaViewModel: TareaViewModel = hiltViewModel(),
+    rutinaViewModel: RutinaViewModel = hiltViewModel()
 ) {
-    val taskState by taskViewModel.uiState.collectAsState()
-    val routineState by routineViewModel.uiState.collectAsState()
+    val tareaState by tareaViewModel.uiState.collectAsState()
+    val rutinaState by rutinaViewModel.uiState.collectAsState()
     var showAddOptions by remember { mutableStateOf(false) }
-    var showAddRoutineDialog by remember { mutableStateOf(false) }
-    var showAddTaskDialog by remember { mutableStateOf(false) }
-    val allRoutines = routineState.routines
+    var showAddRutinaDialog by remember { mutableStateOf(false) }
+    var showAddTareaDialog by remember { mutableStateOf(false) }
+    val allRutinas = rutinaState.rutinas
+
+    // Sincronizar ubicación seleccionada desde el ViewModel
+    // La ubicación llega al ViewModel desde el NavGraph/MainScreen
 
     LazyColumn(
         modifier = modifier
@@ -90,11 +74,11 @@ fun TaskListScreen(
             }
         }
 
-        val activeTasks = taskState.activeTasks
-        val pendingTasks = taskState.pendingTasks
-        val completedTasks = taskState.completedTasks
+        val activeTareas = tareaState.activeTareas
+        val pendingTareas = tareaState.pendingTareas
+        val completedTareas = tareaState.completedTareas
 
-        if (activeTasks.isNotEmpty()) {
+        if (activeTareas.isNotEmpty()) {
             item {
                 Text(
                     text = "🟢 PRÓXIMA ACTIVIDAD",
@@ -104,30 +88,30 @@ fun TaskListScreen(
                     letterSpacing = 0.1.sp
                 )
             }
-            items(activeTasks) { task ->
-                TaskCard(
-                    task = task,
+            items(activeTareas) { tarea ->
+                TareaCard(
+                    tarea = tarea,
                     color = Color(0xFF97E3F0),
                     showCompleteButton = true,
-                    onComplete = { taskViewModel.completeTask(task) }
+                    onComplete = { tareaViewModel.completeTarea(tarea) }
                 )
             }
         }
 
-        if (pendingTasks.isNotEmpty()) {
+        if (pendingTareas.isNotEmpty()) {
             item {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "🟡 PRÓXIMAS (${pendingTasks.size})",
+                    text = "🟡 PRÓXIMAS (${pendingTareas.size})",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     letterSpacing = 0.1.sp
                 )
             }
-            items(pendingTasks) { task ->
-                TaskCard(
-                    task = task,
+            items(pendingTareas) { tarea ->
+                TareaCard(
+                    tarea = tarea,
                     color = Color(0xFFFFDF85),
                     showCompleteButton = false,
                     onComplete = {}
@@ -135,20 +119,20 @@ fun TaskListScreen(
             }
         }
 
-        if (completedTasks.isNotEmpty()) {
+        if (completedTareas.isNotEmpty()) {
             item {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "🔴 FINALIZADAS (${completedTasks.size})",
+                    text = "🔴 FINALIZADAS (${completedTareas.size})",
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     letterSpacing = 0.1.sp
                 )
             }
-            items(completedTasks) { task ->
-                TaskCard(
-                    task = task,
+            items(completedTareas) { tarea ->
+                TareaCard(
+                    tarea = tarea,
                     color = MaterialTheme.colorScheme.surfaceVariant,
                     showCompleteButton = false,
                     onComplete = {}
@@ -156,7 +140,7 @@ fun TaskListScreen(
             }
         }
 
-        if (!taskState.isLoading && activeTasks.isEmpty() && pendingTasks.isEmpty()) {
+        if (!tareaState.isLoading && activeTareas.isEmpty() && pendingTareas.isEmpty()) {
             item {
                 Spacer(modifier = Modifier.height(48.dp))
                 Column(
@@ -186,49 +170,51 @@ fun TaskListScreen(
     if (showAddOptions) {
         AddChoiceDialog(
             onDismiss = { showAddOptions = false },
-            onAddRoutine = {
+            onAddRutina = {
                 showAddOptions = false
-                showAddRoutineDialog = true
+                showAddRutinaDialog = true
             },
-            onAddTask = {
+            onAddTarea = {
                 showAddOptions = false
-                showAddTaskDialog = true
+                showAddTareaDialog = true
             }
         )
     }
 
-    if (showAddRoutineDialog) {
-        AddRoutineDialog(
-            onDismiss = { showAddRoutineDialog = false },
+    if (showAddRutinaDialog) {
+        AddRutinaDialog(
+            onDismiss = { showAddRutinaDialog = false },
             onConfirm = { name ->
-                routineViewModel.createRoutine(name)
+                rutinaViewModel.createRutina(name)
             }
         )
     }
 
-    if (showAddTaskDialog && allRoutines.isNotEmpty()) {
-        AddTaskDialog(
-            routines = allRoutines,
-            onDismiss = { showAddTaskDialog = false },
-            onConfirm = { title, dueDate, routineId ->
-                taskViewModel.createTask(title, "", dueDate, routineId)
-            }
+    if (showAddTareaDialog && allRutinas.isNotEmpty()) {
+        AddTareaDialog(
+            rutinas = allRutinas,
+            onDismiss = { showAddTareaDialog = false },
+            onConfirm = { title, dueDate, rutinaId, location ->
+                tareaViewModel.createTarea(title, "", dueDate, rutinaId, location)
+            },
+            onPickLocation = onPickLocation,
+            initialLocation = tareaState.pickedLocation // Pasar ubicación del estado
         )
     }
 
-    if (showAddTaskDialog && allRoutines.isEmpty()) {
-        NoRoutinesDialog(
+    if (showAddTareaDialog && allRutinas.isEmpty()) {
+        NoRutinasDialog(
             onDismiss = {
-                showAddTaskDialog = false
-                showAddRoutineDialog = true
+                showAddTareaDialog = false
+                showAddRutinaDialog = true
             }
         )
     }
 }
 
 @Composable
-private fun TaskCard(
-    task: Task,
+private fun TareaCard(
+    tarea: Tarea,
     color: Color,
     showCompleteButton: Boolean,
     onComplete: () -> Unit
@@ -249,15 +235,15 @@ private fun TaskCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = task.title,
+                    text = tarea.title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    textDecoration = if (task.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
+                    textDecoration = if (tarea.isCompleted) TextDecoration.LineThrough else TextDecoration.None,
                     modifier = Modifier.weight(1f)
                 )
-                if (task.isCompleted) {
+                if (tarea.isCompleted) {
                     Icon(
                         Icons.Default.CheckCircle,
                         contentDescription = null,
@@ -267,15 +253,15 @@ private fun TaskCard(
                 }
             }
 
-            if (task.description.isNotBlank()) {
+            if (tarea.description.isNotBlank()) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = task.description,
+                    text = tarea.description,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
-                    textDecoration = if (task.isCompleted) TextDecoration.LineThrough else TextDecoration.None
+                    textDecoration = if (tarea.isCompleted) TextDecoration.LineThrough else TextDecoration.None
                 )
             }
 
@@ -290,14 +276,14 @@ private fun TaskCard(
                 )
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
-                    text = task.dueDate?.let {
+                    text = tarea.dueDate?.let {
                         SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Date(it))
                     } ?: "Sin horario",
                     fontSize = 13.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
-                if (task.location.isNotBlank()) {
+                if (tarea.location.isNotBlank()) {
                     Spacer(modifier = Modifier.width(16.dp))
                     Icon(
                         Icons.Default.LocationOn,
@@ -307,9 +293,12 @@ private fun TaskCard(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = task.location,
+                        text = tarea.location,
                         fontSize = 13.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
                     )
                 }
             }
@@ -319,7 +308,7 @@ private fun TaskCard(
                 OutlinedButton(
                     onClick = onComplete,
                     shape = RoundedCornerShape(30.dp),
-                    colors = androidx.compose.material3.ButtonDefaults.outlinedButtonColors(
+                    colors = ButtonDefaults.outlinedButtonColors(
                         contentColor = MaterialTheme.colorScheme.primary
                     )
                 ) {

@@ -3,6 +3,8 @@ package com.example.focusflow.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.focusflow.data.repository.AuthRepository
+import com.example.focusflow.data.repository.RutinaRepository
+import com.example.focusflow.data.repository.TareaRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,14 +20,31 @@ data class AuthUiState(
 
 @HiltViewModel
 class AuthViewModel @Inject constructor(
-    private val authRepository: AuthRepository
+    private val authRepository: AuthRepository,
+    private val rutinaRepository: RutinaRepository,
+    private val tareaRepository: TareaRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
     init {
-        _uiState.value = _uiState.value.copy(isLoggedIn = authRepository.isLoggedIn)
+        val loggedIn = authRepository.isLoggedIn
+        _uiState.value = _uiState.value.copy(isLoggedIn = loggedIn)
+        if (loggedIn) {
+            viewModelScope.launch {
+                syncData()
+            }
+        }
+    }
+
+    private suspend fun syncData() {
+        try {
+            rutinaRepository.fetchRutinasFromFirebase()
+            tareaRepository.fetchTareasFromFirebase()
+        } catch (e: Exception) {
+            // Error silencioso en segundo plano
+        }
     }
 
     fun loginWithGoogle(idToken: String) {
@@ -34,6 +53,7 @@ class AuthViewModel @Inject constructor(
             val result = authRepository.signInWithGoogle(idToken)
             result.fold(
                 onSuccess = {
+                    syncData()
                     _uiState.value = _uiState.value.copy(isLoading = false, isLoggedIn = true)
                 },
                 onFailure = { e ->
@@ -47,8 +67,10 @@ class AuthViewModel @Inject constructor(
     }
 
     fun logout() {
-        authRepository.logout()
-        _uiState.value = AuthUiState(isLoggedIn = false)
+        viewModelScope.launch {
+            authRepository.logout()
+            _uiState.value = AuthUiState(isLoggedIn = false)
+        }
     }
 
     fun clearError() {
