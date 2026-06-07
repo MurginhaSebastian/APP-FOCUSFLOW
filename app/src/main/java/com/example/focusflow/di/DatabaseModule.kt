@@ -3,8 +3,8 @@ package com.example.focusflow.di
 import android.content.Context
 import androidx.room.Room
 import com.example.focusflow.data.local.AppDatabase
-import com.example.focusflow.data.local.RoutineDao
-import com.example.focusflow.data.local.TaskDao
+import com.example.focusflow.data.local.RutinaDao
+import com.example.focusflow.data.local.TareaDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -28,13 +28,13 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideTaskDao(database: AppDatabase): TaskDao {
-        return database.taskDao()
+    fun provideTareaDao(database: AppDatabase): TareaDao {
+        return database.tareaDao()
     }
 
     @Provides
     @Singleton
-    fun provideRoutineDao(database: AppDatabase): RoutineDao {
-        return database.routineDao()
+    fun provideRutinaDao(database: AppDatabase): RutinaDao {
+        return database.rutinaDao()
     }
 }

@@ -16,7 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun NoRoutinesDialog(
+fun NoRutinasDialog(
     onDismiss: () -> Unit
 ) {
     AlertDialog(

@@ -3,17 +3,17 @@ package com.example.focusflow.data.model
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "tasks")
-data class Task(
+@Entity(tableName = "tareas")
+data class Tarea(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-    val title: String,
+    val title: String = "",
     val description: String = "",
     val isCompleted: Boolean = false,
     val status: String = STATUS_PENDING,
     val dueDate: Long? = null,
     val location: String = "",
-    val routineId: Int = 0,
+    val rutinaId: Int = 0,
     val userId: String = ""
 ) {
     companion object {

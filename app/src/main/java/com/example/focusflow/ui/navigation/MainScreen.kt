@@ -8,6 +8,7 @@ import androidx.compose.material.icons.filled.QrCodeScanner
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -20,6 +21,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -33,7 +36,7 @@ import com.example.focusflow.ui.chatbot.ChatBotScreen
 import com.example.focusflow.ui.home.HomeScreen
 import com.example.focusflow.ui.qr.QRScreen
 import com.example.focusflow.ui.settings.SettingsScreen
-import com.example.focusflow.ui.tasks.TaskListScreen
+import com.example.focusflow.ui.tasks.TareaListScreen
 import com.example.focusflow.viewmodel.AuthViewModel
 
 private data class BottomNavItem(
@@ -52,11 +55,19 @@ private val bottomNavItems = listOf(
 @Composable
 fun MainScreen(
     onLogout: () -> Unit,
+    onPickLocation: () -> Unit,
     authViewModel: AuthViewModel = hiltViewModel()
 ) {
+    val uiState by authViewModel.uiState.collectAsState()
     var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
     var showMenu by remember { mutableStateOf(false) }
     var showSettings by remember { mutableStateOf(false) }
+
+    LaunchedEffect(uiState.isLoggedIn) {
+        if (!uiState.isLoggedIn) {
+            onLogout()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -88,7 +99,7 @@ fun MainScreen(
                                 onLogout()
                             },
                             leadingIcon = {
-                                Icon(Icons.Default.MoreVert, contentDescription = null)
+                                Icon(Icons.Default.Logout, contentDescription = null)
                             }
                         )
                     }
@@ -118,8 +129,9 @@ fun MainScreen(
                 0 -> HomeScreen(
                     modifier = Modifier.padding(innerPadding)
                 )
-                1 -> TaskListScreen(
-                    modifier = Modifier.padding(innerPadding)
+                1 -> TareaListScreen(
+                    modifier = Modifier.padding(innerPadding),
+                    onPickLocation = onPickLocation
                 )
                 2 -> QRScreen(
                     modifier = Modifier.padding(innerPadding)

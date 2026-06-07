@@ -31,18 +31,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
-import com.example.focusflow.data.model.Task
-import com.example.focusflow.data.remote.WeatherInfo
-import com.example.focusflow.ui.theme.FocusFlowTheme
-import com.example.focusflow.viewmodel.HomeUiState
+import com.example.focusflow.data.model.Tarea
 import com.example.focusflow.viewmodel.HomeViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -70,15 +65,6 @@ fun HomeScreen(
         return
     }
 
-    HomeContent(state = state, onRefreshQuote = viewModel::refreshQuote, modifier = modifier)
-}
-
-@Composable
-fun HomeContent(
-    state: HomeUiState,
-    onRefreshQuote: () -> Unit,
-    modifier: Modifier = Modifier
-) {
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -130,13 +116,13 @@ fun HomeContent(
                         letterSpacing = 0.1.sp
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    if (state.nextTask != null) {
+                    if (state.nextTarea != null) {
                         Text(
-                            text = state.nextTask!!.title,
+                            text = state.nextTarea!!.title,
                             style = MaterialTheme.typography.headlineSmall,
                             fontWeight = FontWeight.Bold
                         )
-                        state.nextTask!!.dueDate?.let { dueDate ->
+                        state.nextTarea!!.dueDate?.let { dueDate ->
                             val dateFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())
                             Text(
                                 text = dateFormat.format(Date(dueDate)),
@@ -156,7 +142,7 @@ fun HomeContent(
             }
         }
 
-        if (state.pendingTasks.isNotEmpty()) {
+        if (state.pendingTareas.isNotEmpty()) {
             item {
                 Text(
                     text = "Pendientes",
@@ -164,8 +150,8 @@ fun HomeContent(
                     fontWeight = FontWeight.Bold
                 )
             }
-            items(state.pendingTasks) { task ->
-                PendingTaskItem(task = task)
+            items(state.pendingTareas) { tarea ->
+                PendingTareaItem(tarea = tarea)
             }
         }
 
@@ -186,7 +172,7 @@ fun HomeContent(
                 )
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = "${state.completedTasks}/${state.totalTasks} tareas completadas",
+                    text = "${state.completedTareas}/${state.totalTareas} tareas completadas",
                     fontSize = 13.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -208,7 +194,7 @@ fun HomeContent(
                         color = MaterialTheme.colorScheme.onTertiaryContainer
                     )
                     Spacer(modifier = Modifier.height(8.dp))
-                    TextButton(onClick = { onRefreshQuote() }) {
+                    TextButton(onClick = { viewModel.refreshQuote() }) {
                         Text(text = "Nueva frase", fontSize = 13.sp)
                     }
                 }
@@ -259,7 +245,7 @@ fun HomeContent(
 }
 
 @Composable
-private fun PendingTaskItem(task: Task) {
+private fun PendingTareaItem(tarea: Tarea) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -275,13 +261,13 @@ private fun PendingTaskItem(task: Task) {
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = task.title,
+                    text = tarea.title,
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.Medium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                task.dueDate?.let { dueDate ->
+                tarea.dueDate?.let { dueDate ->
                     val timeFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())
                     Text(
                         text = timeFormat.format(Date(dueDate)),
@@ -295,40 +281,5 @@ private fun PendingTaskItem(task: Task) {
                 fontSize = 16.sp
             )
         }
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-private fun HomeScreenPreview() {
-    FocusFlowTheme {
-        HomeContent(
-            state = HomeUiState(
-                userName = "Sebastián",
-                photoUrl = "",
-                nextTask = Task(
-                    title = "Estudiar matemáticas",
-                    status = Task.STATUS_ACTIVE,
-                    dueDate = System.currentTimeMillis() + 3600000
-                ),
-                pendingTasks = listOf(
-                    Task(title = "Leer capítulo 5", status = Task.STATUS_PENDING, dueDate = System.currentTimeMillis() + 7200000),
-                    Task(title = "Hacer ejercicio", status = Task.STATUS_PENDING, dueDate = System.currentTimeMillis() + 10800000),
-                    Task(title = "Revisar correo", status = Task.STATUS_PENDING)
-                ),
-                totalTasks = 5,
-                completedTasks = 3,
-                progress = 0.6f,
-                quote = "El éxito es la suma de pequeños esfuerzos repetidos día tras día.",
-                weather = WeatherInfo(
-                    temp = "22",
-                    description = "Soleado",
-                    condition = "Clear",
-                    suggestedActivity = "Sal a caminar 15 minutos"
-                ),
-                isLoading = false
-            ),
-            onRefreshQuote = {}
-        )
     }
 }
