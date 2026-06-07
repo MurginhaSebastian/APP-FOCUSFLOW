@@ -28,9 +28,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.focusflow.ui.theme.FocusFlowTheme
 import com.example.focusflow.ui.chatbot.ChatBotScreen
 import com.example.focusflow.ui.home.HomeScreen
 import com.example.focusflow.ui.qr.QRScreen
@@ -131,13 +129,5 @@ fun MainScreen(
                 )
             }
         }
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-private fun MainScreenPreview() {
-    FocusFlowTheme {
-        MainScreen(onLogout = {})
     }
 }

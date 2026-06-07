@@ -26,8 +26,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.focusflow.ui.theme.FocusFlowTheme
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
 
@@ -90,13 +88,5 @@ fun SplashScreen(
                 modifier = Modifier.size(32.dp)
             )
         }
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-private fun SplashScreenPreview() {
-    FocusFlowTheme {
-        SplashScreen(onAuthChecked = {})
     }
 }
