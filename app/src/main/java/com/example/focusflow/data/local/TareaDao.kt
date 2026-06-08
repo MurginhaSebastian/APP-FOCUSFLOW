@@ -41,4 +41,7 @@ interface TareaDao {
 
     @Query("DELETE FROM tareas WHERE id = :tareaId")
     suspend fun deleteTareaById(tareaId: Int)
+
+    @Query("SELECT * FROM tareas WHERE status = 'COMPLETED'")
+    suspend fun getCompletedTareasSync(): List<Tarea>
 }

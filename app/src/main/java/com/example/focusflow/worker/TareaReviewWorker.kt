@@ -14,7 +14,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 
 @HiltWorker
-class TareaWorker @AssistedInject constructor(
+class TareaReviewWorker @AssistedInject constructor(
     @Assisted private val context: Context,
     @Assisted params: WorkerParameters,
     private val repository: TareaRepository
@@ -26,14 +26,9 @@ class TareaWorker @AssistedInject constructor(
 
         return try {
             val tarea = repository.getTareaById(tareaId)
-            if (tarea != null && tarea.status == Tarea.STATUS_PENDING) {
-                val updatedTarea = tarea.copy(status = Tarea.STATUS_ACTIVE)
-                repository.updateTarea(updatedTarea)
-                
-                // Programar la revisión para dentro de 1 hora
-                repository.scheduleTaskReview(updatedTarea)
-                
-                sendNotification(updatedTarea)
+            // Solo notificamos si la tarea sigue activa y no ha sido completada
+            if (tarea != null && tarea.status == Tarea.STATUS_ACTIVE && !tarea.isCompleted) {
+                sendReviewNotification(tarea)
             }
             Result.success()
         } catch (e: Exception) {
@@ -41,18 +36,18 @@ class TareaWorker @AssistedInject constructor(
         }
     }
 
-    private fun sendNotification(tarea: Tarea) {
+    private fun sendReviewNotification(tarea: Tarea) {
         val notificationManager =
             context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         val notification = NotificationCompat.Builder(context, "TAREA_CHANNEL")
-            .setSmallIcon(R.drawable.ic_launcher_foreground) // Asegúrate de que este icono exista o cámbialo
-            .setContentTitle("¡Tarea Activada!")
-            .setContentText("Es hora de: ${tarea.title}")
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentTitle("¿Finalizaste tu tarea?")
+            .setContentText("Ha pasado una hora desde el inicio de: ${tarea.title}. Confirma si ya terminaste.")
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
             .build()
 
-        notificationManager.notify(tarea.id, notification)
+        notificationManager.notify(tarea.id + 1000, notification)
     }
 }

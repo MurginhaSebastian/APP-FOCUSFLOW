@@ -7,8 +7,14 @@ import android.content.Context
 import android.os.Build
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import com.example.focusflow.viewmodel.StreakTracker
+import com.example.focusflow.worker.CleanupWorker
 import dagger.hilt.android.HiltAndroidApp
+import java.util.Calendar
+import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
 @HiltAndroidApp
@@ -21,6 +27,31 @@ class FocusFlowApp : Application(), Configuration.Provider {
         super.onCreate()
         createNotificationChannel()
         StreakTracker.updateStreak(this)
+        setupDailyCleanup()
+    }
+
+    private fun setupDailyCleanup() {
+        val cleanupRequest = PeriodicWorkRequestBuilder<CleanupWorker>(24, TimeUnit.HOURS)
+            .setInitialDelay(calculateDelayToMidnight(), TimeUnit.MILLISECONDS)
+            .addTag("daily_cleanup")
+            .build()
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "cleanup_completed_tasks",
+            ExistingPeriodicWorkPolicy.KEEP,
+            cleanupRequest
+        )
+    }
+
+    private fun calculateDelayToMidnight(): Long {
+        val calendar = Calendar.getInstance().apply {
+            add(Calendar.DAY_OF_YEAR, 1)
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }
+        return calendar.timeInMillis - System.currentTimeMillis()
     }
 
     private fun createNotificationChannel() {

@@ -20,6 +20,7 @@ data class HomeUiState(
     val photoUrl: String = "",
     val nextTarea: Tarea? = null,
     val pendingTareas: List<Tarea> = emptyList(),
+    val confirmCompletionTareas: List<Tarea> = emptyList(),
     val totalTareas: Int = 0,
     val completedTareas: Int = 0,
     val progress: Float = 0f,
@@ -64,10 +65,19 @@ class HomeViewModel @Inject constructor(
                     val totalTareas = tareas.size
                     val completedTareas = tareas.count { it.isCompleted }
                     val progress = if (totalTareas > 0) completedTareas.toFloat() / totalTareas else 0f
+                    val currentTime = System.currentTimeMillis()
+                    val oneHourInMillis = 60 * 60 * 1000L
+
                     val activeTareas = tareas.filter { it.status == Tarea.STATUS_ACTIVE }
                     val pendingTareas = tareas
                         .filter { it.status == Tarea.STATUS_PENDING }
                         .sortedBy { it.dueDate ?: Long.MAX_VALUE }
+                    
+                    // Tareas activas que llevan más de una hora (según su dueDate)
+                    val confirmCompletionTareas = activeTareas.filter { 
+                        val activationTime = it.dueDate ?: 0L
+                        currentTime > (activationTime + oneHourInMillis)
+                    }
 
                     _uiState.value = _uiState.value.copy(
                         totalTareas = totalTareas,
@@ -75,6 +85,7 @@ class HomeViewModel @Inject constructor(
                         progress = progress,
                         nextTarea = activeTareas.firstOrNull() ?: pendingTareas.firstOrNull(),
                         pendingTareas = pendingTareas.take(5),
+                        confirmCompletionTareas = confirmCompletionTareas,
                         isLoading = false
                     )
                 }
@@ -99,5 +110,11 @@ class HomeViewModel @Inject constructor(
 
     fun refresh() {
         loadHome()
+    }
+
+    fun completeTarea(tarea: Tarea) {
+        viewModelScope.launch {
+            tareaRepository.completeTarea(tarea)
+        }
     }
 }

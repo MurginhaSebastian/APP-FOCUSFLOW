@@ -142,6 +142,23 @@ fun HomeScreen(
             }
         }
 
+        if (state.confirmCompletionTareas.isNotEmpty()) {
+            item {
+                Text(
+                    text = "Confirmar finalización",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+            items(state.confirmCompletionTareas) { tarea ->
+                ReviewTareaItem(
+                    tarea = tarea,
+                    onComplete = { viewModel.completeTarea(tarea) }
+                )
+            }
+        }
+
         if (state.pendingTareas.isNotEmpty()) {
             item {
                 Text(
@@ -240,6 +257,53 @@ fun HomeScreen(
 
         item {
             Spacer(modifier = Modifier.height(16.dp))
+        }
+    }
+}
+
+@Composable
+private fun ReviewTareaItem(
+    tarea: Tarea,
+    onComplete: () -> Unit
+) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.errorContainer
+        )
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = tarea.title,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onErrorContainer
+                    )
+                    Text(
+                        text = "¿Has finalizado esta tarea?",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.7f)
+                    )
+                }
+                TextButton(
+                    onClick = onComplete,
+                    colors = androidx.compose.material3.ButtonDefaults.textButtonColors(
+                        contentColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text("SÍ, FINALIZADA", fontWeight = FontWeight.ExtraBold)
+                }
+            }
         }
     }
 }

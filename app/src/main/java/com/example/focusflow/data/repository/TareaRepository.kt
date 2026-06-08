@@ -7,6 +7,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.example.focusflow.data.local.TareaDao
 import com.example.focusflow.data.model.Tarea
+import com.example.focusflow.worker.TareaReviewWorker
 import com.example.focusflow.worker.TareaWorker
 import com.google.firebase.database.FirebaseDatabase
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -25,6 +26,24 @@ class TareaRepository @Inject constructor(
 ) {
     private val tareasRef = firebaseDatabase.getReference("tareas")
     private val workManager: WorkManager by lazy { WorkManager.getInstance(context) }
+
+    fun scheduleTaskReview(tarea: Tarea) {
+        val data = Data.Builder()
+            .putInt("tarea_id", tarea.id)
+            .build()
+
+        val workRequest = OneTimeWorkRequestBuilder<TareaReviewWorker>()
+            .setInitialDelay(1, TimeUnit.HOURS)
+            .setInputData(data)
+            .addTag("review_${tarea.id}")
+            .build()
+
+        workManager.enqueueUniqueWork(
+            "review_task_${tarea.id}",
+            ExistingWorkPolicy.REPLACE,
+            workRequest
+        )
+    }
 
     private fun scheduleTaskActivation(tarea: Tarea) {
         val dueDate = tarea.dueDate ?: return
@@ -117,9 +136,18 @@ class TareaRepository @Inject constructor(
         syncTareaToFirebase(tarea)
         
         when (tarea.status) {
-            Tarea.STATUS_PENDING -> scheduleTaskActivation(tarea)
-            Tarea.STATUS_ACTIVE, Tarea.STATUS_COMPLETED -> {
+            Tarea.STATUS_PENDING -> {
+                scheduleTaskActivation(tarea)
+                workManager.cancelUniqueWork("review_task_${tarea.id}")
+            }
+            Tarea.STATUS_ACTIVE -> {
                 workManager.cancelUniqueWork("activate_task_${tarea.id}")
+                // Si pasa a ACTIVE manualmente, también programamos la revisión
+                scheduleTaskReview(tarea)
+            }
+            Tarea.STATUS_COMPLETED -> {
+                workManager.cancelUniqueWork("activate_task_${tarea.id}")
+                workManager.cancelUniqueWork("review_task_${tarea.id}")
             }
         }
     }
@@ -127,6 +155,7 @@ class TareaRepository @Inject constructor(
     suspend fun deleteTarea(tarea: Tarea) {
         tareaDao.deleteTarea(tarea)
         workManager.cancelUniqueWork("activate_task_${tarea.id}")
+        workManager.cancelUniqueWork("review_task_${tarea.id}")
         val userKey = authRepository.getSanitizedEmail()
         if (userKey.isNotEmpty()) {
             tareasRef.child(userKey).child(tarea.id.toString()).removeValue()
