@@ -21,16 +21,13 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.zxing.BinaryBitmap
 import com.google.zxing.MultiFormatReader
 import com.google.zxing.RGBLuminanceSource
@@ -41,13 +38,16 @@ import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 
 @Composable
-fun QRScreen(modifier: Modifier = Modifier) {
+fun QRScreen(
+    modifier: Modifier = Modifier,
+    viewModel: QRViewModel = hiltViewModel()
+) {
     val context = LocalContext.current
-    var qrResult by remember { mutableStateOf("") }
+    val state by viewModel.uiState.collectAsState()
 
     val cameraLauncher = rememberLauncherForActivityResult(ScanContract()) { result ->
         if (result.contents != null) {
-            qrResult = result.contents
+            handleQRResult(result.contents, viewModel)
         } else {
             Toast.makeText(context, "Escaneo cancelado", Toast.LENGTH_SHORT).show()
         }
@@ -64,11 +64,25 @@ fun QRScreen(modifier: Modifier = Modifier) {
                     val source = RGBLuminanceSource(bitmap.width, bitmap.height, intArray)
                     val binaryBitmap = BinaryBitmap(HybridBinarizer(source))
                     val result = MultiFormatReader().decode(binaryBitmap)
-                    qrResult = result.text
+                    handleQRResult(result.text, viewModel)
                 }
             } catch (e: Exception) {
                 Toast.makeText(context, "No se pudo leer el QR", Toast.LENGTH_SHORT).show()
             }
+        }
+    }
+
+    if (state.success) {
+        LaunchedEffect(Unit) {
+            // El mensaje de éxito ahora se gestiona a través de infoMessage o directamente aquí
+            viewModel.resetSuccess()
+        }
+    }
+
+    if (state.infoMessage != null) {
+        LaunchedEffect(state.infoMessage) {
+            Toast.makeText(context, state.infoMessage, Toast.LENGTH_SHORT).show()
+            viewModel.clearInfoMessage()
         }
     }
 
@@ -81,9 +95,16 @@ fun QRScreen(modifier: Modifier = Modifier) {
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Escanear QR",
+            text = "Vincular Dispositivo",
             style = MaterialTheme.typography.headlineMedium,
             fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+        )
+        
+        Text(
+            text = "Escanea el código de otro usuario para establecer un vínculo de tareas",
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            modifier = Modifier.padding(top = 8.dp)
         )
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -91,17 +112,17 @@ fun QRScreen(modifier: Modifier = Modifier) {
         Button(
             onClick = {
                 val options = ScanOptions()
-                options.setPrompt("Escanea el QR de tu rutina")
+                options.setCaptureActivity(QRScannerActivity::class.java)
+                options.setPrompt("Escanea el QR de Enlace de FocusFlow")
                 options.setBeepEnabled(true)
                 options.setOrientationLocked(true)
                 options.setDesiredBarcodeFormats(ScanOptions.QR_CODE)
-                options.setCaptureActivity(QRScannerActivity::class.java)
                 cameraLauncher.launch(options)
             },
             modifier = Modifier.fillMaxWidth()
         ) {
             Icon(Icons.Default.CameraAlt, contentDescription = null)
-            Text("  Escanear con cámara", modifier = Modifier.padding(start = 8.dp))
+            Text("  Escanear Enlace", modifier = Modifier.padding(start = 8.dp))
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -117,15 +138,26 @@ fun QRScreen(modifier: Modifier = Modifier) {
             Text("  Leer desde galería", modifier = Modifier.padding(start = 8.dp))
         }
 
-            if (qrResult.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(24.dp))
-                Text(
-                    text = "Código: $qrResult",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
+        if (state.isAssigning) {
+            Spacer(modifier = Modifier.height(24.dp))
+            CircularProgressIndicator()
         }
+    }
+}
+
+private fun handleQRResult(content: String, viewModel: QRViewModel) {
+    when {
+        content.startsWith("focusflow:enlace:") -> {
+            val email = content.removePrefix("focusflow:enlace:")
+            viewModel.setScannedEmail(email)
+        }
+        content.startsWith("FOCUS_") -> {
+            viewModel.showInfoMessage("Código de rutina detectado. Usa la sección de Chatbot para ver detalles.")
+        }
+        else -> {
+            viewModel.showInfoMessage("Código QR no reconocido")
+        }
+    }
 }
 
 @Preview(showBackground = true, showSystemUi = true)

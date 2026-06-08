@@ -25,7 +25,9 @@ import com.example.focusflow.ui.theme.FocusPrimary
 @Composable
 fun AddRutinaDialog(
     onDismiss: () -> Unit,
-    onConfirm: (name: String) -> Unit
+    onConfirm: (name: String) -> Unit,
+    title: String = "Nueva rutina",
+    description: String = "Crea una rutina para organizar tus tareas."
 ) {
     var name by remember { mutableStateOf("") }
 
@@ -37,7 +39,6 @@ fun AddRutinaDialog(
                 onClick = {
                     if (name.isNotBlank()) {
                         onConfirm(name.trim())
-                        onDismiss()
                     }
                 },
                 enabled = name.isNotBlank(),
@@ -65,14 +66,14 @@ fun AddRutinaDialog(
         },
         title = {
             Text(
-                text = "Nueva rutina",
+                text = title,
                 style = MaterialTheme.typography.headlineSmall
             )
         },
         text = {
             Column {
                 Text(
-                    text = "Crea una rutina para organizar tus tareas.",
+                    text = description,
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )

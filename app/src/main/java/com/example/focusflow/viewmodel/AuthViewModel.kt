@@ -42,6 +42,10 @@ class AuthViewModel @Inject constructor(
         try {
             rutinaRepository.fetchRutinasFromFirebase()
             tareaRepository.fetchTareasFromFirebase()
+            
+            // Activar sincronización en tiempo real
+            rutinaRepository.startRealtimeSync()
+            tareaRepository.startRealtimeSync()
         } catch (e: Exception) {
             // Error silencioso en segundo plano
         }

@@ -18,6 +18,8 @@ import javax.inject.Inject
 data class HomeUiState(
     val userName: String = "",
     val photoUrl: String = "",
+    val userId: String = "",
+    val userEmail: String = "",
     val nextTarea: Tarea? = null,
     val pendingTareas: List<Tarea> = emptyList(),
     val confirmCompletionTareas: List<Tarea> = emptyList(),
@@ -48,10 +50,13 @@ class HomeViewModel @Inject constructor(
         val userId = authRepository.getUserId()
         val userName = authRepository.getUserName()
         val photoUrl = authRepository.getUserPhotoUrl()
+        val userEmail = authRepository.getUserEmail()
 
         _uiState.value = _uiState.value.copy(
             userName = userName,
-            photoUrl = photoUrl
+            photoUrl = photoUrl,
+            userId = userId,
+            userEmail = userEmail
         )
 
         viewModelScope.launch {

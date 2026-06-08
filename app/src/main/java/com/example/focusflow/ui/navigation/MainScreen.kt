@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material.icons.filled.Link
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -40,6 +41,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.focusflow.ui.chatbot.ChatBotScreen
+import com.example.focusflow.ui.enlace.EnlaceScreen
 import com.example.focusflow.ui.focus.FocusScreen
 import com.example.focusflow.ui.home.HomeScreen
 import com.example.focusflow.ui.qr.QRScreen
@@ -59,7 +61,8 @@ private val bottomNavItems = listOf(
     BottomNavItem("Focus", Icons.Default.Timer),
     BottomNavItem("Tareas", Icons.Default.Checklist),
     BottomNavItem("QR", Icons.Default.QrCodeScanner),
-    BottomNavItem("Chat", Icons.Default.SmartToy)
+    BottomNavItem("Chat", Icons.Default.SmartToy),
+    BottomNavItem("Enlace", Icons.Default.Link)
 )
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -181,6 +184,10 @@ fun MainScreen(
                     )
                     3 -> QRScreen(modifier = Modifier)
                     4 -> ChatBotScreen(modifier = Modifier)
+                    5 -> EnlaceScreen(
+                        modifier = Modifier,
+                        onNavigateToQR = { selectedIndex = 3 }
+                    )
                 }
                 if (blockedIndex) {
                     Box(

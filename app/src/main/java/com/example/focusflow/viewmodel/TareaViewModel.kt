@@ -64,6 +64,11 @@ class TareaViewModel @Inject constructor(
         val userId = authRepository.getUserId()
         if (userId.isBlank()) return
 
+        // Intentar descargar nuevas tareas desde Firebase
+        viewModelScope.launch {
+            tareaRepository.fetchTareasFromFirebase()
+        }
+
         viewModelScope.launch {
             tareaRepository.getTareasByUser(userId).collect { tareas ->
                 _uiState.value = _uiState.value.copy(

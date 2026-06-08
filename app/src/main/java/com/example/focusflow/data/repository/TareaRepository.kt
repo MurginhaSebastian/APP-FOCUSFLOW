@@ -9,9 +9,15 @@ import com.example.focusflow.data.local.TareaDao
 import com.example.focusflow.data.model.Tarea
 import com.example.focusflow.worker.TareaReviewWorker
 import com.example.focusflow.worker.TareaWorker
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
@@ -80,14 +86,19 @@ class TareaRepository @Inject constructor(
 
     suspend fun fetchTareasFromFirebase() {
         val userKey = authRepository.getSanitizedEmail()
+        val currentUserId = authRepository.getUserId()
         if (userKey.isNotEmpty()) {
             try {
-                val snapshot = tareasRef.child(userKey).get().await()
-                snapshot.children.forEach { child ->
+                tareasRef.child(userKey).get().await().children.forEach { child ->
                     child.getValue(Tarea::class.java)?.let { tarea ->
-                        tareaDao.insertTarea(tarea)
-                        if (tarea.status == Tarea.STATUS_PENDING) {
-                            scheduleTaskActivation(tarea)
+                        val tareaToSave = if (tarea.userId == "remote") {
+                            tarea.copy(userId = currentUserId)
+                        } else {
+                            tarea
+                        }
+                        tareaDao.insertTarea(tareaToSave)
+                        if (tareaToSave.status == Tarea.STATUS_PENDING) {
+                            scheduleTaskActivation(tareaToSave)
                         }
                     }
                 }
@@ -95,6 +106,34 @@ class TareaRepository @Inject constructor(
                 // Manejar error de descarga
             }
         }
+    }
+
+    fun startRealtimeSync() {
+        val userKey = authRepository.getSanitizedEmail()
+        val currentUserId = authRepository.getUserId()
+        if (userKey.isEmpty()) return
+
+        tareasRef.child(userKey).addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                CoroutineScope(Dispatchers.IO).launch {
+                    snapshot.children.forEach { child ->
+                        child.getValue(Tarea::class.java)?.let { tarea ->
+                            val tareaToSave = if (tarea.userId == "remote") {
+                                tarea.copy(userId = currentUserId)
+                            } else {
+                                tarea
+                            }
+                            tareaDao.insertTarea(tareaToSave)
+                            if (tareaToSave.status == Tarea.STATUS_PENDING) {
+                                scheduleTaskActivation(tareaToSave)
+                            }
+                        }
+                    }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {}
+        })
     }
 
     fun getTareasByUser(userId: String): Flow<List<Tarea>> {
@@ -168,6 +207,21 @@ class TareaRepository @Inject constructor(
             status = Tarea.STATUS_COMPLETED
         )
         updateTarea(updatedTarea)
+    }
+
+    suspend fun assignTareaToUser(targetUserEmail: String, tarea: Tarea) {
+        val sanitizedEmail = targetUserEmail.replace(".", "_")
+        if (sanitizedEmail.isNotEmpty()) {
+            try {
+                // Obtenemos una nueva referencia para generar un ID único en Firebase
+                val newRef = tareasRef.child(sanitizedEmail).push()
+                val targetTaskId = (System.currentTimeMillis() % 1000000).toInt() // ID numérico para Room
+                val tareaToSync = tarea.copy(id = targetTaskId)
+                newRef.setValue(tareaToSync).await()
+            } catch (e: Exception) {
+                // Manejar error
+            }
+        }
     }
 
     fun getTareasByRutina(rutinaId: Int): Flow<List<Tarea>> {

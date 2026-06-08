@@ -25,6 +25,21 @@ class SettingsRepository @Inject constructor(
         val BREAK_DURATION_KEY = intPreferencesKey("break_duration")
         val LONG_BREAK_KEY = intPreferencesKey("long_break")
         val CYCLES_KEY = intPreferencesKey("cycles")
+        private val LINKED_USER_EMAIL_KEY = androidx.datastore.preferences.core.stringPreferencesKey("linked_user_email")
+    }
+
+    val linkedUserEmail: Flow<String?> = context.dataStore.data.map { prefs ->
+        prefs[LINKED_USER_EMAIL_KEY]
+    }
+
+    suspend fun setLinkedUserEmail(email: String?) {
+        context.dataStore.edit { prefs ->
+            if (email == null) {
+                prefs.remove(LINKED_USER_EMAIL_KEY)
+            } else {
+                prefs[LINKED_USER_EMAIL_KEY] = email
+            }
+        }
     }
 
     val isDarkMode: Flow<Boolean> = context.dataStore.data.map { prefs ->
