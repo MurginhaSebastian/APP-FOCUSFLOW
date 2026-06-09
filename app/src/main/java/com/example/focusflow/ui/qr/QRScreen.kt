@@ -2,7 +2,6 @@ package com.example.focusflow.ui.qr
 
 import android.graphics.BitmapFactory
 import android.net.Uri
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -19,41 +18,49 @@ import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.google.zxing.BinaryBitmap
 import com.google.zxing.MultiFormatReader
 import com.google.zxing.RGBLuminanceSource
 import com.google.zxing.common.HybridBinarizer
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.focusflow.ui.theme.FocusFlowTheme
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 
 @Composable
 fun QRScreen(
     modifier: Modifier = Modifier,
-    viewModel: QRViewModel = hiltViewModel()
+    viewModel: QRViewModel = hiltViewModel(),
 ) {
     val context = LocalContext.current
     val state by viewModel.uiState.collectAsState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     val cameraLauncher = rememberLauncherForActivityResult(ScanContract()) { result ->
         if (result.contents != null) {
             handleQRResult(result.contents, viewModel)
-        } else {
-            Toast.makeText(context, "Escaneo cancelado", Toast.LENGTH_SHORT).show()
         }
     }
 
-    val galleryLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+    val galleryLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
         if (uri != null) {
             try {
                 val inputStream = context.contentResolver.openInputStream(uri)
@@ -66,23 +73,23 @@ fun QRScreen(
                     val result = MultiFormatReader().decode(binaryBitmap)
                     handleQRResult(result.text, viewModel)
                 }
-            } catch (e: Exception) {
-                Toast.makeText(context, "No se pudo leer el QR", Toast.LENGTH_SHORT).show()
+            } catch (_: Exception) {
+                viewModel.showInfoMessage("No se pudo leer el QR")
             }
         }
     }
 
-    if (state.success) {
-        LaunchedEffect(Unit) {
-            // El mensaje de éxito ahora se gestiona a través de infoMessage o directamente aquí
-            viewModel.resetSuccess()
+    LaunchedEffect(state.infoMessage) {
+        state.infoMessage?.let { msg ->
+            snackbarHostState.showSnackbar(msg)
+            viewModel.clearInfoMessage()
         }
     }
 
-    if (state.infoMessage != null) {
-        LaunchedEffect(state.infoMessage) {
-            Toast.makeText(context, state.infoMessage, Toast.LENGTH_SHORT).show()
-            viewModel.clearInfoMessage()
+    LaunchedEffect(state.success) {
+        if (state.success) {
+            snackbarHostState.showSnackbar("Vinculación exitosa")
+            viewModel.resetSuccess()
         }
     }
 
@@ -92,19 +99,19 @@ fun QRScreen(
             .padding(24.dp)
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center,
     ) {
         Text(
             text = "Vincular Dispositivo",
             style = MaterialTheme.typography.headlineMedium,
-            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
+            fontWeight = FontWeight.Bold,
         )
-        
+
         Text(
             text = "Escanea el código de otro usuario para establecer un vínculo de tareas",
             style = MaterialTheme.typography.bodyMedium,
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
-            modifier = Modifier.padding(top = 8.dp)
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(top = 8.dp),
         )
 
         Spacer(modifier = Modifier.height(32.dp))
@@ -119,7 +126,7 @@ fun QRScreen(
                 options.setDesiredBarcodeFormats(ScanOptions.QR_CODE)
                 cameraLauncher.launch(options)
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         ) {
             Icon(Icons.Default.CameraAlt, contentDescription = null)
             Text("  Escanear Enlace", modifier = Modifier.padding(start = 8.dp))
@@ -131,8 +138,8 @@ fun QRScreen(
             onClick = { galleryLauncher.launch("image/*") },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.buttonColors(
-                containerColor = MaterialTheme.colorScheme.secondary
-            )
+                containerColor = MaterialTheme.colorScheme.secondary,
+            ),
         ) {
             Icon(Icons.Default.PhotoLibrary, contentDescription = null)
             Text("  Leer desde galería", modifier = Modifier.padding(start = 8.dp))
@@ -157,13 +164,5 @@ private fun handleQRResult(content: String, viewModel: QRViewModel) {
         else -> {
             viewModel.showInfoMessage("Código QR no reconocido")
         }
-    }
-}
-
-@Preview(showBackground = true, showSystemUi = true)
-@Composable
-private fun QRScreenPreview() {
-    FocusFlowTheme {
-        QRScreen()
     }
 }

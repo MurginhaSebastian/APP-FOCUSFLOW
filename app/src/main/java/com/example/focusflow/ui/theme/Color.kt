@@ -1,6 +1,11 @@
 package com.example.focusflow.ui.theme
 
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.Immutable
 import androidx.compose.ui.graphics.Color
+
+val FocusSeed = Color(0xFF689F38)
 
 val FocusPrimary = Color(0xFF689F38)
 val FocusOnPrimary = Color.White
@@ -12,10 +17,10 @@ val FocusOnSecondary = Color.White
 val FocusSecondaryContainer = Color(0xFFB2EBF2)
 val FocusOnSecondaryContainer = Color(0xFF004D5A)
 
-val FocusTertiary = Color(0xFFE57373)
+val FocusTertiary = Color(0xFF1A237E)
 val FocusOnTertiary = Color.White
-val FocusTertiaryContainer = Color(0xFFFFCDD2)
-val FocusOnTertiaryContainer = Color(0xFF5F2121)
+val FocusTertiaryContainer = Color(0xFFE8EAF6)
+val FocusOnTertiaryContainer = Color(0xFF1A237E)
 
 val FocusAccent = Color(0xFFFFD54F)
 val FocusOnAccent = Color(0xFF3E2E00)
@@ -34,12 +39,56 @@ val FocusOutline = Color(0xFFDDDDDD)
 val FocusError = Color(0xFFE57373)
 val FocusOnError = Color.White
 
-val FocusCardActive = Color(0xFF97E3F0)
-val FocusCardQuote = Color(0xFFFFDF85)
-val FocusCardWeather = Color.White
-
 val DarkFocusBackground = Color(0xFF121212)
 val DarkFocusSurface = Color(0xFF1E1E1E)
 val DarkFocusSurfaceVariant = Color(0xFF2C2C2C)
 val DarkFocusOnBackground = Color(0xFFE6E6E6)
 val DarkFocusOnSurface = Color(0xFFE6E6E6)
+
+val LightColorScheme = lightColorScheme(
+    primary = FocusPrimary,
+    onPrimary = FocusOnPrimary,
+    primaryContainer = FocusPrimaryContainer,
+    onPrimaryContainer = FocusOnPrimaryContainer,
+    secondary = FocusSecondary,
+    onSecondary = FocusOnSecondary,
+    secondaryContainer = FocusSecondaryContainer,
+    onSecondaryContainer = FocusOnSecondaryContainer,
+    tertiary = FocusTertiary,
+    onTertiary = FocusOnTertiary,
+    tertiaryContainer = FocusTertiaryContainer,
+    onTertiaryContainer = FocusOnTertiaryContainer,
+    background = FocusBackground,
+    onBackground = FocusOnBackground,
+    surface = FocusSurface,
+    onSurface = FocusOnSurface,
+    surfaceVariant = FocusSurfaceVariant,
+    onSurfaceVariant = FocusOnSurfaceVariant,
+    outline = FocusOutline,
+    error = FocusError,
+    onError = FocusOnError,
+)
+
+val DarkColorScheme = darkColorScheme(
+    primary = FocusPrimaryContainer,
+    onPrimary = FocusPrimary,
+    primaryContainer = FocusPrimary,
+    onPrimaryContainer = FocusPrimaryContainer,
+    secondary = FocusSecondaryContainer,
+    onSecondary = FocusSecondary,
+    secondaryContainer = FocusSecondary,
+    onSecondaryContainer = FocusSecondaryContainer,
+    tertiary = FocusTertiaryContainer,
+    onTertiary = FocusTertiary,
+    tertiaryContainer = FocusTertiary,
+    onTertiaryContainer = FocusTertiaryContainer,
+    background = DarkFocusBackground,
+    onBackground = DarkFocusOnBackground,
+    surface = DarkFocusSurface,
+    onSurface = DarkFocusOnSurface,
+    surfaceVariant = DarkFocusSurfaceVariant,
+    onSurfaceVariant = FocusOnSurfaceVariant,
+    outline = FocusOutline,
+    error = FocusError,
+    onError = FocusOnError,
+)

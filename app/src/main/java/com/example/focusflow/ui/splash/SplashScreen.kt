@@ -22,28 +22,33 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.delay
 
 @Composable
 fun SplashScreen(
-    onAuthChecked: (isLoggedIn: Boolean) -> Unit
+    onAuthChecked: (isLoggedIn: Boolean) -> Unit,
 ) {
     var startAnimation by remember { mutableStateOf(false) }
     val alphaAnim by animateFloatAsState(
         targetValue = if (startAnimation) 1f else 0f,
-        animationSpec = tween(durationMillis = 800),
-        label = "alpha"
+        animationSpec = tween(durationMillis = 600),
+        label = "alpha",
+    )
+    val scaleAnim by animateFloatAsState(
+        targetValue = if (startAnimation) 1f else 0.8f,
+        animationSpec = tween(durationMillis = 600),
+        label = "scale",
     )
 
     LaunchedEffect(Unit) {
         startAnimation = true
-        delay(1000)
-
+        delay(1200)
         val currentUser = FirebaseAuth.getInstance().currentUser
         onAuthChecked(currentUser != null)
     }
@@ -52,40 +57,38 @@ fun SplashScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
-        contentAlignment = Alignment.Center
+        contentAlignment = Alignment.Center,
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
-            modifier = Modifier.alpha(alphaAnim)
+            modifier = Modifier
+                .fillMaxSize()
+                .alpha(alphaAnim)
+                .scale(scaleAnim),
         ) {
             Text(
-                text = "🎯",
-                fontSize = 80.sp
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Text(
                 text = "FocusFlow",
-                fontSize = 36.sp,
+                style = MaterialTheme.typography.displaySmall,
                 fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary,
             )
 
             Spacer(modifier = Modifier.height(8.dp))
 
             Text(
                 text = "Organiza tu mente, alcanza tus metas",
-                fontSize = 14.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
             )
 
             Spacer(modifier = Modifier.height(48.dp))
 
             CircularProgressIndicator(
                 color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.size(24.dp),
+                strokeWidth = 2.dp,
             )
         }
     }

@@ -4,14 +4,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -20,14 +18,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.focusflow.ui.theme.FocusPrimary
 
 @Composable
 fun AddRutinaDialog(
     onDismiss: () -> Unit,
     onConfirm: (name: String) -> Unit,
     title: String = "Nueva rutina",
-    description: String = "Crea una rutina para organizar tus tareas."
+    description: String = "Crea una rutina para organizar tus tareas.",
 ) {
     var name by remember { mutableStateOf("") }
 
@@ -42,11 +39,7 @@ fun AddRutinaDialog(
                     }
                 },
                 enabled = name.isNotBlank(),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                ),
-                shape = RoundedCornerShape(30.dp),
-                modifier = Modifier.padding(bottom = 8.dp)
+                shape = MaterialTheme.shapes.medium,
             ) {
                 Text("Guardar rutina")
             }
@@ -56,10 +49,9 @@ fun AddRutinaDialog(
                 onClick = onDismiss,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.surface,
-                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 ),
-                shape = RoundedCornerShape(30.dp),
-                modifier = Modifier.padding(bottom = 8.dp)
+                shape = MaterialTheme.shapes.medium,
             ) {
                 Text("Cancelar")
             }
@@ -67,7 +59,7 @@ fun AddRutinaDialog(
         title = {
             Text(
                 text = title,
-                style = MaterialTheme.typography.headlineSmall
+                style = MaterialTheme.typography.headlineSmall,
             )
         },
         text = {
@@ -75,7 +67,7 @@ fun AddRutinaDialog(
                 Text(
                     text = description,
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 OutlinedTextField(
@@ -85,12 +77,8 @@ fun AddRutinaDialog(
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = FocusPrimary,
-                        focusedLabelColor = FocusPrimary
-                    )
                 )
             }
-        }
+        },
     )
 }

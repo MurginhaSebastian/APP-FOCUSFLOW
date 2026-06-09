@@ -2,41 +2,59 @@ package com.example.focusflow.ui.tasks
 
 import android.app.TimePickerDialog
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.navigation.compose.rememberNavController
 import com.example.focusflow.data.model.Rutina
-import com.example.focusflow.ui.theme.FocusPrimary
 import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddTareaDialog(
     rutinas: List<Rutina>,
+    initialRutina: Rutina? = null,
     onDismiss: () -> Unit,
     onConfirm: (title: String, dueDate: Long?, rutinaId: Int, location: String) -> Unit,
     onPickLocation: () -> Unit,
-    initialLocation: String = "" // Añadido para recibir la ubicación del ViewModel
+    initialLocation: String = "",
 ) {
     var title by remember { mutableStateOf("") }
-    var selectedRutina by remember { mutableStateOf<Rutina?>(null) }
+    var selectedRutina by remember { mutableStateOf(initialRutina) }
     var expanded by remember { mutableStateOf(false) }
     var selectedTime by remember { mutableStateOf<Pair<Int, Int>?>(null) }
-    
-    // Sincronizar la ubicación interna con la recibida
     var location by remember(initialLocation) { mutableStateOf(initialLocation) }
-    
     val context = LocalContext.current
-    
+
     AlertDialog(
         onDismissRequest = onDismiss,
         shape = RoundedCornerShape(20.dp),
@@ -52,9 +70,6 @@ fun AddTareaDialog(
                                 set(Calendar.SECOND, 0)
                                 set(Calendar.MILLISECOND, 0)
                             }
-                            
-                            // Si la hora seleccionada ya pasó hace más de 1 minuto, programar para mañana
-                            // Esto evita que tareas creadas para el minuto actual se pasen a mañana por segundos
                             if (cal.timeInMillis < now.timeInMillis - 60000) {
                                 cal.add(Calendar.DAY_OF_YEAR, 1)
                             }
@@ -65,11 +80,7 @@ fun AddTareaDialog(
                     }
                 },
                 enabled = title.isNotBlank() && selectedRutina != null,
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.primary
-                ),
-                shape = RoundedCornerShape(30.dp),
-                modifier = Modifier.padding(bottom = 8.dp)
+                shape = MaterialTheme.shapes.medium,
             ) {
                 Text("Guardar tarea")
             }
@@ -79,10 +90,9 @@ fun AddTareaDialog(
                 onClick = onDismiss,
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.surface,
-                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
                 ),
-                shape = RoundedCornerShape(30.dp),
-                modifier = Modifier.padding(bottom = 8.dp)
+                shape = MaterialTheme.shapes.medium,
             ) {
                 Text("Cancelar")
             }
@@ -90,7 +100,7 @@ fun AddTareaDialog(
         title = {
             Text(
                 text = "Nueva tarea",
-                style = MaterialTheme.typography.headlineSmall
+                style = MaterialTheme.typography.headlineSmall,
             )
         },
         text = {
@@ -102,17 +112,13 @@ fun AddTareaDialog(
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = FocusPrimary,
-                        focusedLabelColor = FocusPrimary
-                    )
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
 
                 ExposedDropdownMenuBox(
                     expanded = expanded,
-                    onExpandedChange = { expanded = it }
+                    onExpandedChange = { expanded = it },
                 ) {
                     OutlinedTextField(
                         value = selectedRutina?.name ?: "",
@@ -122,16 +128,12 @@ fun AddTareaDialog(
                         trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .menuAnchor(),
+                            .menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = true),
                         shape = RoundedCornerShape(12.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = FocusPrimary,
-                            focusedLabelColor = FocusPrimary
-                        )
                     )
                     ExposedDropdownMenu(
                         expanded = expanded,
-                        onDismissRequest = { expanded = false }
+                        onDismissRequest = { expanded = false },
                     ) {
                         rutinas.forEach { rutina ->
                             DropdownMenuItem(
@@ -139,7 +141,7 @@ fun AddTareaDialog(
                                 onClick = {
                                     selectedRutina = rutina
                                     expanded = false
-                                }
+                                },
                             )
                         }
                     }
@@ -149,7 +151,7 @@ fun AddTareaDialog(
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
                     OutlinedTextField(
                         value = selectedTime?.let { formatTime(it.first, it.second) } ?: "",
@@ -157,11 +159,11 @@ fun AddTareaDialog(
                         readOnly = true,
                         label = { Text("Hora") },
                         trailingIcon = {
-                            Icon(Icons.Default.AccessTime, contentDescription = null)
+                            Icon(Icons.Default.AccessTime, contentDescription = "Seleccionar hora")
                         },
                         modifier = Modifier
                             .weight(1f)
-                            .clickable {
+                            .clickable(enabled = true) {
                                 val now = Calendar.getInstance()
                                 TimePickerDialog(
                                     context,
@@ -170,15 +172,10 @@ fun AddTareaDialog(
                                     },
                                     now.get(Calendar.HOUR_OF_DAY),
                                     now.get(Calendar.MINUTE),
-                                    true
+                                    true,
                                 ).show()
                             },
                         shape = RoundedCornerShape(12.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = FocusPrimary,
-                            focusedLabelColor = FocusPrimary
-                        ),
-                        enabled = false
                     )
 
                     Spacer(modifier = Modifier.width(8.dp))
@@ -186,27 +183,25 @@ fun AddTareaDialog(
                     OutlinedButton(
                         onClick = onPickLocation,
                         modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(30.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = FocusPrimary
-                        )
+                        shape = MaterialTheme.shapes.medium,
                     ) {
                         Icon(Icons.Default.LocationOn, contentDescription = null)
-                        Text("  Ubicación")
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text("Ubicación")
                     }
                 }
-                
+
                 if (location.isNotEmpty()) {
                     Text(
-                        text = "📍 $location",
+                        text = location,
                         style = MaterialTheme.typography.bodySmall,
-                        color = FocusPrimary,
+                        color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(top = 4.dp),
-                        maxLines = 1
+                        maxLines = 1,
                     )
                 }
             }
-        }
+        },
     )
 }
 

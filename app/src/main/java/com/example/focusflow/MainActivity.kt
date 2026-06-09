@@ -39,7 +39,10 @@ class MainActivity : ComponentActivity() {
             val settingsViewModel: SettingsViewModel = hiltViewModel()
             val settingsState by settingsViewModel.uiState.collectAsState()
 
-            FocusFlowTheme(darkTheme = settingsState.isDarkMode) {
+            FocusFlowTheme(
+                darkTheme = settingsState.isDarkMode,
+                dynamicColor = settingsState.isDynamicColor,
+            ) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background

@@ -17,7 +17,8 @@ data class SettingsUiState(
     val photoUrl: String = "",
     val email: String = "",
     val streak: Int = 0,
-    val isDarkMode: Boolean = false
+    val isDarkMode: Boolean = false,
+    val isDynamicColor: Boolean = false,
 )
 
 @HiltViewModel
@@ -38,12 +39,17 @@ class SettingsViewModel @Inject constructor(
 
         viewModelScope.launch {
             settingsRepository.isDarkMode.collect { isDark ->
-                _uiState.value = SettingsUiState(
+                _uiState.value = _uiState.value.copy(isDarkMode = isDark)
+            }
+        }
+        viewModelScope.launch {
+            settingsRepository.isDynamicColor.collect { dynamic ->
+                _uiState.value = _uiState.value.copy(
                     userName = userName,
                     photoUrl = photoUrl,
                     email = email,
                     streak = streak,
-                    isDarkMode = isDark
+                    isDynamicColor = dynamic,
                 )
             }
         }
@@ -52,6 +58,12 @@ class SettingsViewModel @Inject constructor(
     fun toggleDarkMode(enabled: Boolean) {
         viewModelScope.launch {
             settingsRepository.setDarkMode(enabled)
+        }
+    }
+
+    fun toggleDynamicColor(enabled: Boolean) {
+        viewModelScope.launch {
+            settingsRepository.setDynamicColor(enabled)
         }
     }
 }

@@ -21,6 +21,7 @@ class SettingsRepository @Inject constructor(
 ) {
     companion object {
         private val DARK_MODE_KEY = booleanPreferencesKey("dark_mode")
+        private val DYNAMIC_COLOR_KEY = booleanPreferencesKey("dynamic_color")
         val FOCUS_DURATION_KEY = intPreferencesKey("focus_duration")
         val BREAK_DURATION_KEY = intPreferencesKey("break_duration")
         val LONG_BREAK_KEY = intPreferencesKey("long_break")
@@ -60,6 +61,16 @@ class SettingsRepository @Inject constructor(
 
     val cycles: Flow<Int> = context.dataStore.data.map { prefs ->
         prefs[CYCLES_KEY] ?: 4
+    }
+
+    val isDynamicColor: Flow<Boolean> = context.dataStore.data.map { prefs ->
+        prefs[DYNAMIC_COLOR_KEY] ?: false
+    }
+
+    suspend fun setDynamicColor(enabled: Boolean) {
+        context.dataStore.edit { prefs ->
+            prefs[DYNAMIC_COLOR_KEY] = enabled
+        }
     }
 
     suspend fun setDarkMode(enabled: Boolean) {

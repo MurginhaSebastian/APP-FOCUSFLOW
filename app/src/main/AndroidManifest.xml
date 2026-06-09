@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
@@ -38,7 +39,7 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyDR33k0gSWd0KOHk0vU04xOIS9xfmx2QRM" />
+            android:value="AIzaSyCWaRYvD2D_HE4eFIDbYhwLLj1z7jsPUdE" />
 
         <provider
             android:name="androidx.startup.InitializationProvider"

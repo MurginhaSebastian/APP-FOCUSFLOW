@@ -3,7 +3,7 @@ package com.example.focusflow.ui.tasks
 import android.location.Geocoder
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -41,7 +41,7 @@ fun MapPickerScreen(
                 title = { Text("Seleccionar Ubicación") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Volver")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
                     }
                 }
             )
@@ -97,6 +97,7 @@ fun MapPickerScreen(
     }
 }
 
+@Suppress("DEPRECATION")
 private suspend fun getAddressFromLatLng(context: android.content.Context, latLng: LatLng): String = withContext(Dispatchers.IO) {
     return@withContext try {
         val geocoder = Geocoder(context, Locale.getDefault())
