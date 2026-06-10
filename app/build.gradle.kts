@@ -9,12 +9,12 @@ plugins {
 
 android {
     namespace = "com.example.focusflow"
-    compileSdk = 36
+    compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.focusflow"
+        applicationId = "com.example.FocusFlow"
         minSdk = 24
-        targetSdk = 36
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -31,14 +31,14 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     buildFeatures {
         compose = true
     }
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
     }
 }
 
@@ -70,10 +70,11 @@ dependencies {
     implementation("androidx.room:room-runtime:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
     ksp("androidx.room:room-compiler:2.6.1")
-    implementation(libs.firebase.auth.ktx)
-    implementation(libs.firebase.database.ktx)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.database)
+    implementation(libs.firebase.analytics)
     implementation(libs.kotlinx.coroutines.android)
-    implementation(platform("com.google.firebase:firebase-bom:33.8.0"))
 
     implementation(libs.play.services.auth)
     implementation(libs.zxing.core)

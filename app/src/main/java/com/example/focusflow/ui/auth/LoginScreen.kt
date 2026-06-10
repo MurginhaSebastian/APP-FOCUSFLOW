@@ -70,8 +70,8 @@ fun LoginScreen(
             account.idToken?.let { idToken ->
                 viewModel.loginWithGoogle(idToken)
             }
-        } catch (_: ApiException) {
-            viewModel.clearError()
+        } catch (e: ApiException) {
+            viewModel.setError("Error de Google (${e.statusCode}): ${e.message}")
         }
     }
 

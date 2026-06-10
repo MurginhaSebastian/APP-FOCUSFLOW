@@ -1,7 +1,7 @@
 package com.example.focusflow.ui.components
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -36,7 +36,7 @@ fun FocusFlowCard(
             border = border,
             elevation = elevation,
         ) {
-            Box(modifier = Modifier.padding(contentPadding)) {
+            Column(modifier = Modifier.padding(contentPadding)) {
                 content()
             }
         }
@@ -48,7 +48,7 @@ fun FocusFlowCard(
             border = border,
             elevation = elevation,
         ) {
-            Box(modifier = Modifier.padding(contentPadding)) {
+            Column(modifier = Modifier.padding(contentPadding)) {
                 content()
             }
         }

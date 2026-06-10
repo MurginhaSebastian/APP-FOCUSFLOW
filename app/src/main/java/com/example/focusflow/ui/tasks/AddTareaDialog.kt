@@ -2,6 +2,7 @@ package com.example.focusflow.ui.tasks
 
 import android.app.TimePickerDialog
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -153,30 +154,36 @@ fun AddTareaDialog(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth(),
                 ) {
-                    OutlinedTextField(
-                        value = selectedTime?.let { formatTime(it.first, it.second) } ?: "",
-                        onValueChange = {},
-                        readOnly = true,
-                        label = { Text("Hora") },
-                        trailingIcon = {
-                            Icon(Icons.Default.AccessTime, contentDescription = "Seleccionar hora")
-                        },
-                        modifier = Modifier
-                            .weight(1f)
-                            .clickable(enabled = true) {
-                                val now = Calendar.getInstance()
-                                TimePickerDialog(
-                                    context,
-                                    { _, hour, minute ->
-                                        selectedTime = Pair(hour, minute)
-                                    },
-                                    now.get(Calendar.HOUR_OF_DAY),
-                                    now.get(Calendar.MINUTE),
-                                    true,
-                                ).show()
+                    Box(modifier = Modifier.weight(1f)) {
+                        OutlinedTextField(
+                            value = selectedTime?.let { formatTime(it.first, it.second) } ?: "",
+                            onValueChange = {},
+                            readOnly = true,
+                            label = { Text("Hora") },
+                            trailingIcon = {
+                                Icon(Icons.Default.AccessTime, contentDescription = "Seleccionar hora")
                             },
-                        shape = RoundedCornerShape(12.dp),
-                    )
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                        )
+                        // Overlay invisible para capturar el clic
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .clickable {
+                                    val now = Calendar.getInstance()
+                                    TimePickerDialog(
+                                        context,
+                                        { _, hour, minute ->
+                                            selectedTime = Pair(hour, minute)
+                                        },
+                                        now.get(Calendar.HOUR_OF_DAY),
+                                        now.get(Calendar.MINUTE),
+                                        true,
+                                    ).show()
+                                }
+                        )
+                    }
 
                     Spacer(modifier = Modifier.width(8.dp))
 
