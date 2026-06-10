@@ -113,26 +113,42 @@ class TareaRepository @Inject constructor(
         val currentUserId = authRepository.getUserId()
         if (userKey.isEmpty()) return
 
-        tareasRef.child(userKey).addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                CoroutineScope(Dispatchers.IO).launch {
-                    snapshot.children.forEach { child ->
-                        child.getValue(Tarea::class.java)?.let { tarea ->
-                            val tareaToSave = if (tarea.userId == "remote") {
-                                tarea.copy(userId = currentUserId)
-                            } else {
-                                tarea
-                            }
-                            tareaDao.insertTarea(tareaToSave)
-                            if (tareaToSave.status == Tarea.STATUS_PENDING) {
-                                scheduleTaskActivation(tareaToSave)
-                            }
-                        }
+        tareasRef.child(userKey).addChildEventListener(object : com.google.firebase.database.ChildEventListener {
+            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                saveSnapshot(snapshot, currentUserId)
+            }
+
+            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
+                saveSnapshot(snapshot, currentUserId)
+            }
+
+            override fun onChildRemoved(snapshot: DataSnapshot) {
+                val tareaId = snapshot.child("id").getValue(Int::class.java)
+                tareaId?.let { id ->
+                    CoroutineScope(Dispatchers.IO).launch {
+                        tareaDao.deleteTareaById(id)
                     }
                 }
             }
 
+            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
             override fun onCancelled(error: DatabaseError) {}
+
+            private fun saveSnapshot(snapshot: DataSnapshot, userId: String) {
+                CoroutineScope(Dispatchers.IO).launch {
+                    snapshot.getValue(Tarea::class.java)?.let { tarea ->
+                        val tareaToSave = if (tarea.userId == "remote") {
+                            tarea.copy(userId = userId)
+                        } else {
+                            tarea
+                        }
+                        tareaDao.insertTarea(tareaToSave)
+                        if (tareaToSave.status == Tarea.STATUS_PENDING) {
+                            scheduleTaskActivation(tareaToSave)
+                        }
+                    }
+                }
+            }
         })
     }
 
@@ -213,11 +229,17 @@ class TareaRepository @Inject constructor(
         val sanitizedEmail = targetUserEmail.replace(".", "_")
         if (sanitizedEmail.isNotEmpty()) {
             try {
-                // Obtenemos una nueva referencia para generar un ID único en Firebase
-                val newRef = tareasRef.child(sanitizedEmail).push()
-                val targetTaskId = (System.currentTimeMillis() % 1000000).toInt() // ID numérico para Room
-                val tareaToSync = tarea.copy(id = targetTaskId)
-                newRef.setValue(tareaToSync).await()
+                // Generar un ID numérico único basado en el tiempo
+                val targetTaskId = (System.currentTimeMillis() % Int.MAX_VALUE).toInt()
+                
+                // Marcamos la tarea como remota para que el receptor la tome como propia
+                val tareaToSync = tarea.copy(
+                    id = targetTaskId,
+                    userId = "remote"
+                )
+                
+                // Usamos el ID numérico como llave para mantener consistencia con el ChildEventListener
+                tareasRef.child(sanitizedEmail).child(targetTaskId.toString()).setValue(tareaToSync).await()
             } catch (e: Exception) {
                 // Manejar error
             }

@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 fun AddChoiceDialog(
     onDismiss: () -> Unit,
     onAddRutina: () -> Unit,
+    onAddTarea: () -> Unit,
 ) {
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -35,7 +36,7 @@ fun AddChoiceDialog(
                 .padding(bottom = 32.dp),
         ) {
             Text(
-                text = "Agregar",
+                text = "Asignar al dispositivo vinculado",
                 style = MaterialTheme.typography.headlineSmall,
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -50,7 +51,25 @@ fun AddChoiceDialog(
                     tint = MaterialTheme.colorScheme.primary,
                 )
                 Text(
-                    text = "Agregar rutina",
+                    text = "Asignar rutina",
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(start = 12.dp),
+                )
+            }
+
+            TextButton(
+                onClick = onAddTarea,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Icon(
+                    Icons.Default.Add,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.secondary,
+                )
+                Text(
+                    text = "Asignar tarea específica",
                     style = MaterialTheme.typography.bodyLarge,
                     modifier = Modifier
                         .weight(1f)

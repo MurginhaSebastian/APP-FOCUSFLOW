@@ -98,10 +98,30 @@ class HomeViewModel @Inject constructor(
         if (userId.isNotBlank()) {
             viewModelScope.launch {
                 tareaRepository.getTareasByUser(userId).collect { tareas ->
-                    val totalTareas = tareas.size
-                    val completedTareas = tareas.count { it.isCompleted }
-                    val progress = if (totalTareas > 0) completedTareas.toFloat() / totalTareas else 0f
                     val currentTime = System.currentTimeMillis()
+                    val calendar = java.util.Calendar.getInstance()
+                    
+                    // Configurar inicio del día (00:00:00)
+                    calendar.set(java.util.Calendar.HOUR_OF_DAY, 0)
+                    calendar.set(java.util.Calendar.MINUTE, 0)
+                    calendar.set(java.util.Calendar.SECOND, 0)
+                    calendar.set(java.util.Calendar.MILLISECOND, 0)
+                    val startOfDay = calendar.timeInMillis
+                    
+                    // Configurar fin del día (23:59:59)
+                    calendar.set(java.util.Calendar.HOUR_OF_DAY, 23)
+                    calendar.set(java.util.Calendar.MINUTE, 59)
+                    calendar.set(java.util.Calendar.SECOND, 59)
+                    calendar.set(java.util.Calendar.MILLISECOND, 999)
+                    val endOfDay = calendar.timeInMillis
+
+                    // Filtrar tareas que son para HOY (según dueDate)
+                    val todayTareas = tareas.filter { it.dueDate != null && it.dueDate in startOfDay..endOfDay }
+                    
+                    val totalTareas = todayTareas.size
+                    val completedTareas = todayTareas.count { it.isCompleted || it.status == Tarea.STATUS_COMPLETED }
+                    val progress = if (totalTareas > 0) completedTareas.toFloat() / totalTareas else 0f
+
                     val oneHourInMillis = 60 * 60 * 1000L
 
                     val activeTareas = tareas.filter { it.status == Tarea.STATUS_ACTIVE }

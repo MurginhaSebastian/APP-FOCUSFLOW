@@ -51,6 +51,7 @@ import com.example.focusflow.ui.components.generateQRCode
 import com.example.focusflow.ui.qr.QRViewModel
 import com.example.focusflow.ui.tasks.AddChoiceDialog
 import com.example.focusflow.ui.tasks.AddRutinaDialog
+import com.example.focusflow.ui.tasks.AddTareaDialog
 import com.example.focusflow.viewmodel.HomeViewModel
 
 @Composable
@@ -66,6 +67,7 @@ fun EnlaceScreen(
 
     var showAddOptions by remember { mutableStateOf(false) }
     var showAddRutinaDialog by remember { mutableStateOf(false) }
+    var showAddTareaDialog by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
 
     val qrContent = "focusflow:enlace:${state.userEmail.replace(".", "_")}"
@@ -292,6 +294,10 @@ fun EnlaceScreen(
                 showAddOptions = false
                 showAddRutinaDialog = true
             },
+            onAddTarea = {
+                showAddOptions = false
+                showAddTareaDialog = true
+            }
         )
     }
 
@@ -304,6 +310,18 @@ fun EnlaceScreen(
             },
             title = "Asignar Rutina",
             description = "Esta rutina aparecerá en el dispositivo vinculado.",
+        )
+    }
+
+    if (showAddTareaDialog && linkedEmail != null) {
+        AddTareaDialog(
+            rutinas = qrUiState.rutinas,
+            onDismiss = { showAddTareaDialog = false },
+            onConfirm = { title, dueDate, rutinaId, location ->
+                qrViewModel.assignTarea(title, dueDate, rutinaId, location, linkedEmail!!)
+                showAddTareaDialog = false
+            },
+            onPickLocation = { /* Opcional: implementar navegación a mapa si es necesario */ }
         )
     }
 

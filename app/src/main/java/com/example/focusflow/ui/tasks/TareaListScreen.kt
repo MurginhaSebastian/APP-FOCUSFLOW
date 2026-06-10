@@ -200,6 +200,12 @@ fun TareaListScreen(
                 showAddOptions = false
                 showAddRutinaDialog = true
             },
+            onAddTarea = {
+                showAddOptions = false
+                // Abrimos el diálogo de tarea sin una rutina pre-seleccionada
+                selectedRutinaForTask = allRutinas.firstOrNull()
+                showAddTareaDialog = true
+            }
         )
     }
 

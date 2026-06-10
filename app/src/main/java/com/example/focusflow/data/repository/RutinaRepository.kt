@@ -2,6 +2,7 @@ package com.example.focusflow.data.repository
 
 import com.example.focusflow.data.local.RutinaDao
 import com.example.focusflow.data.model.Rutina
+import com.google.firebase.database.ChildEventListener
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -56,23 +57,39 @@ class RutinaRepository @Inject constructor(
         val currentUserId = authRepository.getUserId()
         if (userKey.isEmpty()) return
 
-        rutinasRef.child(userKey).addValueEventListener(object : ValueEventListener {
-            override fun onDataChange(snapshot: DataSnapshot) {
-                CoroutineScope(Dispatchers.IO).launch {
-                    snapshot.children.forEach { child ->
-                        child.getValue(Rutina::class.java)?.let { rutina ->
-                            val rutinaToSave = if (rutina.userId == "remote") {
-                                rutina.copy(userId = currentUserId)
-                            } else {
-                                rutina
-                            }
-                            rutinaDao.insertRutina(rutinaToSave)
-                        }
+        rutinasRef.child(userKey).addChildEventListener(object : ChildEventListener {
+            override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
+                saveSnapshot(snapshot, currentUserId)
+            }
+
+            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {
+                saveSnapshot(snapshot, currentUserId)
+            }
+
+            override fun onChildRemoved(snapshot: DataSnapshot) {
+                val rutinaId = snapshot.child("id").getValue(Int::class.java)
+                rutinaId?.let { id ->
+                    CoroutineScope(Dispatchers.IO).launch {
+                        rutinaDao.deleteRutinaById(id)
                     }
                 }
             }
 
+            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
             override fun onCancelled(error: DatabaseError) {}
+
+            private fun saveSnapshot(snapshot: DataSnapshot, userId: String) {
+                CoroutineScope(Dispatchers.IO).launch {
+                    snapshot.getValue(Rutina::class.java)?.let { rutina ->
+                        val rutinaToSave = if (rutina.userId == "remote") {
+                            rutina.copy(userId = userId)
+                        } else {
+                            rutina
+                        }
+                        rutinaDao.insertRutina(rutinaToSave)
+                    }
+                }
+            }
         })
     }
 
@@ -118,10 +135,17 @@ class RutinaRepository @Inject constructor(
         val sanitizedEmail = targetUserEmail.replace(".", "_")
         if (sanitizedEmail.isNotEmpty()) {
             try {
-                val newRef = rutinasRef.child(sanitizedEmail).push()
-                val targetRutinaId = (System.currentTimeMillis() % 1000000).toInt()
-                val rutinaToSync = rutina.copy(id = targetRutinaId)
-                newRef.setValue(rutinaToSync).await()
+                // Generar un ID numérico único basado en el tiempo
+                val targetRutinaId = (System.currentTimeMillis() % Int.MAX_VALUE).toInt()
+                
+                // Marcamos como remota para que el receptor la tome como propia
+                val rutinaToSync = rutina.copy(
+                    id = targetRutinaId,
+                    userId = "remote"
+                )
+                
+                // Usamos el ID numérico como llave
+                rutinasRef.child(sanitizedEmail).child(targetRutinaId.toString()).setValue(rutinaToSync).await()
             } catch (e: Exception) {
                 // Manejar error
             }
