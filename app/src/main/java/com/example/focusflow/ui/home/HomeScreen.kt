@@ -208,35 +208,50 @@ fun HomeScreen(
                     color = MaterialTheme.colorScheme.primary,
                 )
                 Spacer(modifier = Modifier.height(Spacing.md))
-                if (state.nextTarea != null) {
-                    val tarea = state.nextTarea!!
-                    Text(
-                        text = tarea.title,
-                        style = MaterialTheme.typography.titleLarge,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    tarea.dueDate?.let { dueDate ->
-                        Spacer(modifier = Modifier.height(Spacing.sm))
-                        val dateFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                Icons.Default.Schedule,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp),
-                                tint = MaterialTheme.colorScheme.primary,
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = dateFormat.format(Date(dueDate)),
-                                style = MaterialTheme.typography.titleMedium,
-                                color = MaterialTheme.colorScheme.primary,
-                            )
+                
+                if (state.activeTareas.isNotEmpty()) {
+                    Column(verticalArrangement = Arrangement.spacedBy(Spacing.md)) {
+                        state.activeTareas.forEach { tarea ->
+                            Column {
+                                Text(
+                                    text = tarea.title,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                                tarea.dueDate?.let { dueDate ->
+                                    val dateFormat = SimpleDateFormat("hh:mm a", Locale.getDefault())
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.padding(top = 4.dp)
+                                    ) {
+                                        Icon(
+                                            Icons.Default.Schedule,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(14.dp),
+                                            tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = dateFormat.format(Date(dueDate)),
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.7f),
+                                        )
+                                    }
+                                }
+                                if (tarea != state.activeTareas.last()) {
+                                    androidx.compose.material3.HorizontalDivider(
+                                        modifier = Modifier.padding(top = Spacing.md),
+                                        thickness = 0.5.dp,
+                                        color = MaterialTheme.colorScheme.outlineVariant
+                                    )
+                                }
+                            }
                         }
                     }
                 } else {
                     Text(
-                        text = "Sin tarea activa",
+                        text = "Sin tareas activas",
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

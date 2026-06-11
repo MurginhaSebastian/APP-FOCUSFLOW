@@ -22,7 +22,7 @@ data class HomeUiState(
     val photoUrl: String = "",
     val userId: String = "",
     val userEmail: String = "",
-    val nextTarea: Tarea? = null,
+    val activeTareas: List<Tarea> = emptyList(),
     val pendingTareas: List<Tarea> = emptyList(),
     val confirmCompletionTareas: List<Tarea> = emptyList(),
     val totalTareas: Int = 0,
@@ -137,7 +137,7 @@ class HomeViewModel @Inject constructor(
                         totalTareas = totalTareas,
                         completedTareas = completedTareas,
                         progress = progress,
-                        nextTarea = activeTareas.firstOrNull() ?: pendingTareas.firstOrNull(),
+                        activeTareas = activeTareas.ifEmpty { pendingTareas.take(3) },
                         pendingTareas = pendingTareas.take(5),
                         confirmCompletionTareas = confirmCompletionTareas,
                         isLoading = false
