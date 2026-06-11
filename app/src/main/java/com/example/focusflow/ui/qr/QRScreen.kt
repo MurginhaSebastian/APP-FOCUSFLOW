@@ -159,7 +159,7 @@ private fun handleQRResult(content: String, viewModel: QRViewModel) {
             viewModel.setScannedEmail(email)
         }
         content.startsWith("FOCUS_") -> {
-            viewModel.showInfoMessage("Código de rutina detectado. Usa la sección de Chatbot para ver detalles.")
+            viewModel.applyRutinaSorpresa(content)
         }
         else -> {
             viewModel.showInfoMessage("Código QR no reconocido")

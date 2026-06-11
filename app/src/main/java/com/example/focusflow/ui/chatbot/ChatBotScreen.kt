@@ -3,24 +3,32 @@ package com.example.focusflow.ui.chatbot
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Casino
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.SmartToy
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,7 +37,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.focusflow.ui.components.generateQRCode
+import com.example.focusflow.viewmodel.SmartUiState
+import com.example.focusflow.viewmodel.SmartViewModel
 
 private data class Rutina(
     val codigo: String,
@@ -58,8 +69,13 @@ private val rutinas = listOf(
 )
 
 @Composable
-fun ChatBotScreen(modifier: Modifier = Modifier) {
-    var selectedRutina by remember { mutableStateOf<Rutina?>(null) }
+fun ChatBotScreen(
+    modifier: Modifier = Modifier,
+    smartViewModel: SmartViewModel = hiltViewModel()
+) {
+    var prompt by remember { mutableStateOf("") }
+    val uiState by smartViewModel.uiState.collectAsState()
+    var selectedRutinaLocal by remember { mutableStateOf<Rutina?>(null) }
 
     Column(
         modifier = modifier
@@ -75,48 +91,85 @@ fun ChatBotScreen(modifier: Modifier = Modifier) {
             Icons.Default.SmartToy,
             contentDescription = "Chatbot",
             tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(top = 8.dp),
+            modifier = Modifier.size(48.dp),
         )
 
         Text(
-            text = "Rutinas sugeridas",
+            text = "Asistente Chompibiris",
             style = MaterialTheme.typography.headlineMedium,
         )
 
-        Card(
+        OutlinedTextField(
+            value = prompt,
+            onValueChange = { prompt = it },
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(20.dp),
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.secondaryContainer,
-            ),
-        ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Text(
-                    text = if (selectedRutina == null) {
-                        "Hola, gracias por contarme cómo te sientes.\n\n" +
-                                "He preparado una rutina sorpresa con ayuda de un especialista virtual.\n\n" +
-                                "Presiona el botón para generar una rutina."
-                    } else {
-                        "Rutina generada por ${selectedRutina!!.especialista}\n\n" +
-                                "Escanea el QR para ver los detalles o asigna la rutina como tarea."
+            label = { Text("¿Cómo te sientes o qué quieres lograr?") },
+            placeholder = { Text("Ej: Quiero una rutina para estudiar matemáticas") },
+            trailingIcon = {
+                IconButton(
+                    onClick = {
+                        if (prompt.isNotBlank()) {
+                            smartViewModel.generarRutina(prompt)
+                        }
                     },
-                    style = MaterialTheme.typography.bodyLarge,
+                    enabled = uiState !is SmartUiState.Loading
+                ) {
+                    Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Enviar")
+                }
+            },
+            shape = RoundedCornerShape(12.dp)
+        )
+
+        when (val state = uiState) {
+            is SmartUiState.Loading -> {
+                CircularProgressIndicator(modifier = Modifier.padding(16.dp))
+                Text("Generando tu rutina personalizada...")
+            }
+            is SmartUiState.Success -> {
+                SmartRoutineContent(
+                    rutina = state.rutina,
+                    onAplicar = { smartViewModel.aplicarRutina(state.rutina) }
                 )
+            }
+            is SmartUiState.Error -> {
+                Text(text = state.message, color = MaterialTheme.colorScheme.error)
+            }
+            is SmartUiState.RutinaAplicada -> {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)
+                ) {
+                    Text(
+                        "¡Rutina aplicada con éxito! Puedes verla en la sección de Tareas.",
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+                Button(onClick = { smartViewModel.resetState() }) {
+                    Text("Generar otra")
+                }
+            }
+            else -> {
+                // Mostrar rutinas clásicas (sorpresa) si no hay nada activo
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = "O prueba una rutina sorpresa",
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Button(
+                        onClick = { selectedRutinaLocal = rutinas.random() },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = MaterialTheme.shapes.medium,
+                    ) {
+                        Icon(Icons.Default.Casino, contentDescription = null)
+                        Text("  Rutina Sorpresa", modifier = Modifier.padding(start = 8.dp))
+                    }
+                }
             }
         }
 
-        Button(
-            onClick = {
-                selectedRutina = rutinas.random()
-            },
-            modifier = Modifier.fillMaxWidth(),
-            shape = MaterialTheme.shapes.medium,
-        ) {
-            Icon(Icons.Default.Casino, contentDescription = null)
-            Text("  Generar rutina", modifier = Modifier.padding(start = 8.dp))
-        }
-
-        selectedRutina?.let { rutina ->
+        selectedRutinaLocal?.let { rutina ->
+            // ... (resto del código de la rutina sorpresa anterior)
             val qrBitmap = remember(rutina.codigo) { generateQRCode(rutina.codigo, 500) }
             if (qrBitmap != null) {
                 Image(

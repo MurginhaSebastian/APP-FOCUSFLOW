@@ -3,9 +3,11 @@ package com.example.focusflow.ui.qr
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.focusflow.data.model.Rutina
+import com.example.focusflow.data.model.RutinaSorpresaProvider
 import com.example.focusflow.data.model.Tarea
 import com.example.focusflow.data.repository.AuthRepository
 import com.example.focusflow.data.repository.RutinaRepository
+import com.example.focusflow.data.repository.SmartRepository
 import com.example.focusflow.data.repository.TareaRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,6 +30,7 @@ class QRViewModel @Inject constructor(
     private val tareaRepository: TareaRepository,
     private val rutinaRepository: RutinaRepository,
     private val authRepository: AuthRepository,
+    private val smartRepository: SmartRepository,
     private val settingsRepository: com.example.focusflow.data.repository.SettingsRepository
 ) : ViewModel() {
 
@@ -129,6 +132,23 @@ class QRViewModel @Inject constructor(
                 success = true,
                 infoMessage = "¡Rutina enviada con éxito!"
             )
+        }
+    }
+
+    fun applyRutinaSorpresa(codigo: String) {
+        viewModelScope.launch {
+            val rutinaSugerida = RutinaSorpresaProvider.getRutinaByCodigo(codigo)
+            if (rutinaSugerida != null) {
+                _uiState.value = _uiState.value.copy(isAssigning = true)
+                smartRepository.aplicarRutinaSugerida(rutinaSugerida)
+                _uiState.value = _uiState.value.copy(
+                    isAssigning = false,
+                    success = true,
+                    infoMessage = "¡Rutina Sorpresa '${rutinaSugerida.nombre}' aplicada!"
+                )
+            } else {
+                _uiState.value = _uiState.value.copy(infoMessage = "Código de rutina no válido")
+            }
         }
     }
 
