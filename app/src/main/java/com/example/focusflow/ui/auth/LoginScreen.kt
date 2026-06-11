@@ -116,12 +116,13 @@ fun LoginScreen(
                 .scale(scaleAnim),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Spacer(modifier = Modifier.weight(1f))
+            // Espaciador superior con menos peso para que el bloque suba
+            Spacer(modifier = Modifier.weight(0.8f))
 
             Image(
                 painter = painterResource(R.drawable.logo),
                 contentDescription = "Logo FocusFlow",
-                modifier = Modifier.size(100.dp),
+                modifier = Modifier.size(120.dp),
                 contentScale = ContentScale.Fit,
             )
 
@@ -144,7 +145,7 @@ fun LoginScreen(
                 textAlign = TextAlign.Center,
             )
 
-            Spacer(modifier = Modifier.weight(0.3f))
+            Spacer(modifier = Modifier.height(56.dp))
 
             Button(
                 onClick = {
@@ -152,11 +153,9 @@ fun LoginScreen(
                 },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 4.dp)
-                    .padding(bottom = 20.dp)
                     .height(56.dp),
                 enabled = !uiState.isLoading,
-                shape = MaterialTheme.shapes.medium,
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.surface,
                     contentColor = MaterialTheme.colorScheme.onSurface,
@@ -176,6 +175,9 @@ fun LoginScreen(
                     )
                 }
             }
+
+            // Espaciador inferior con más peso para empujar el bloque hacia arriba
+            Spacer(modifier = Modifier.weight(1.2f))
 
             uiState.error?.let { error ->
                 Text(
