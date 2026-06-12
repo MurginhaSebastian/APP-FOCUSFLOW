@@ -8,8 +8,8 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="com.example.FocusFlow" />
-                  <option name="mobileSdkAppId" value="1:252611340986:android:543cf721fc3038b3b43083" />
+                  <option name="appId" value="com.neocode.FocusFlow" />
+                  <option name="mobileSdkAppId" value="1:252611340986:android:159bbe91771c5714b43083" />
                   <option name="projectId" value="focusflow-2f08b" />
                   <option name="projectNumber" value="252611340986" />
                 </ConnectionSetting>
