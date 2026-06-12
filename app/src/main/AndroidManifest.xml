@@ -11,7 +11,7 @@
 
     <application
         android:name="com.example.focusflow.FocusFlowApp"
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
         android:icon="@mipmap/ic_launcher"
@@ -39,7 +39,7 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyCWaRYvD2D_HE4eFIDbYhwLLj1z7jsPUdE" />
+            android:value="AIzaSyAG9aMwn-VEDUsAMc4rUUVscTyHicSJZMM" />
 
         <provider
             android:name="androidx.startup.InitializationProvider"
@@ -50,7 +50,8 @@
             <meta-data
                 android:name="androidx.work.WorkManagerInitializer"
                 android:value="androidx.startup"
-                tools:node="remove" />
+                tools:node="remove"
+                />
         </provider>
     </application>
 

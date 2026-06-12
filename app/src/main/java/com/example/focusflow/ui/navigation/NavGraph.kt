@@ -62,13 +62,11 @@ fun NavGraph(navController: NavHostController) {
 
         composable(Routes.MAIN) {
             MainScreen(
+                navController = navController,
                 onLogout = {
                     navController.navigate(Routes.LOGIN) {
                         popUpTo(Routes.MAIN) { inclusive = true }
                     }
-                },
-                onPickLocation = {
-                    navController.navigate(Routes.MAP_PICKER)
                 },
                 onOpenSettings = {
                     navController.navigate(Routes.SETTINGS)

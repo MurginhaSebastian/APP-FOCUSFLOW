@@ -35,6 +35,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.animation.togetherWith
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.focusflow.ui.focus.FocusScreen
 import com.example.focusflow.ui.home.HomeScreen
@@ -43,6 +45,7 @@ import com.example.focusflow.ui.enlace.EnlaceScreen
 import com.example.focusflow.viewmodel.AuthViewModel
 import com.example.focusflow.viewmodel.FocusPhase
 import com.example.focusflow.viewmodel.FocusViewModel
+import com.example.focusflow.viewmodel.TareaViewModel
 
 private data class BottomNavItem(
     val label: String,
@@ -60,11 +63,12 @@ private val bottomNavItems = listOf(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
+    navController: NavHostController,
     onLogout: () -> Unit,
-    onPickLocation: () -> Unit,
     onOpenSettings: () -> Unit,
     authViewModel: AuthViewModel = hiltViewModel(),
     focusViewModel: FocusViewModel = hiltViewModel(),
+    tareaViewModel: TareaViewModel = hiltViewModel(),
 ) {
     val uiState by authViewModel.uiState.collectAsState()
     var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
@@ -75,6 +79,17 @@ fun MainScreen(
     val isFocusActive = focusState.phase == FocusPhase.FOCUSING ||
             focusState.phase == FocusPhase.BREAK ||
             focusState.phase == FocusPhase.LONG_BREAK
+
+    // Observar la ubicación seleccionada del mapa
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val pickedLocation = navBackStackEntry?.savedStateHandle?.get<String>("picked_location")
+
+    LaunchedEffect(pickedLocation) {
+        if (pickedLocation != null) {
+            tareaViewModel.setPickedLocation(pickedLocation)
+            navBackStackEntry?.savedStateHandle?.remove<String>("picked_location")
+        }
+    }
 
     LaunchedEffect(uiState.isLoggedIn) {
         if (!uiState.isLoggedIn) {
@@ -186,7 +201,9 @@ fun MainScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(innerPadding),
-                    onPickLocation = onPickLocation,
+                    onPickLocation = {
+                        navController.navigate(Routes.MAP_PICKER)
+                    },
                 )
                 3 -> SmartScreen(
                     modifier = Modifier
@@ -197,7 +214,11 @@ fun MainScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(innerPadding),
-                    onNavigateToQR = { selectedIndex = 3 },
+                    onNavigateToQR = { /* Navegar a QR si existe ruta */ },
+                    onPickLocation = {
+                        navController.navigate("map_picker")
+                    },
+                    tareaViewModel = tareaViewModel
                 )
             }
         }

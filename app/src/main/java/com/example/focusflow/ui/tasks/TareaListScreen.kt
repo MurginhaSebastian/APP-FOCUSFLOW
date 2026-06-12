@@ -66,17 +66,18 @@ fun TareaListScreen(
     val view = LocalView.current
     var showAddOptions by remember { mutableStateOf(false) }
     var showAddRutinaDialog by remember { mutableStateOf(false) }
-    var showAddTareaDialog by remember { mutableStateOf(false) }
-    var selectedRutinaForTask by remember { mutableStateOf<Rutina?>(null) }
     val allRutinas = rutinaState.rutinas
 
     val allActiveTareas = tareaState.activeTareas
     val allPendingTareas = tareaState.pendingTareas
     val allCompletedTareas = tareaState.completedTareas
 
-    val tareasByRutina: Map<Int, List<Tarea>> = remember(allActiveTareas, allPendingTareas, allCompletedTareas) {
+    val tareasByRutina = remember(allActiveTareas, allPendingTareas, allCompletedTareas) {
         (allActiveTareas + allPendingTareas + allCompletedTareas).groupBy { it.rutinaId }
     }
+
+    // Sincronizar la rutina seleccionada del estado del ViewModel
+    val selectedRutinaForTask = allRutinas.find { it.id == tareaState.pendingTaskRutinaId } ?: allRutinas.firstOrNull()
 
     LazyColumn(
         modifier = modifier
@@ -126,8 +127,10 @@ fun TareaListScreen(
                 item(key = "rutina_header_${rutina.id}") {
                     FocusFlowCard(
                         onClick = {
-                            selectedRutinaForTask = rutina
-                            showAddTareaDialog = true
+                            tareaViewModel.updateDraftTask(
+                                rutinaId = rutina.id,
+                                showDialog = true
+                            )
                         },
                     ) {
                         Row(
@@ -202,9 +205,10 @@ fun TareaListScreen(
             },
             onAddTarea = {
                 showAddOptions = false
-                // Abrimos el diálogo de tarea sin una rutina pre-seleccionada
-                selectedRutinaForTask = allRutinas.firstOrNull()
-                showAddTareaDialog = true
+                tareaViewModel.updateDraftTask(
+                    rutinaId = allRutinas.firstOrNull()?.id,
+                    showDialog = true
+                )
             }
         )
     }
@@ -219,22 +223,24 @@ fun TareaListScreen(
         )
     }
 
-    val rutinaParaTarea = selectedRutinaForTask
-    if (showAddTareaDialog && rutinaParaTarea != null) {
+    if (tareaState.isShowingAddDialog && selectedRutinaForTask != null) {
         AddTareaDialog(
             rutinas = allRutinas,
-            initialRutina = rutinaParaTarea,
+            initialRutina = selectedRutinaForTask,
+            initialTitle = tareaState.pendingTaskTitle,
+            initialTime = tareaState.pendingTaskTime,
+            initialLocation = tareaState.pickedLocation,
             onDismiss = {
-                showAddTareaDialog = false
-                selectedRutinaForTask = null
+                tareaViewModel.clearDraft()
             },
+            onTitleChange = { tareaViewModel.updateDraftTask(title = it) },
+            onRutinaChange = { tareaViewModel.updateDraftTask(rutinaId = it.id) },
+            onTimeChange = { tareaViewModel.updateDraftTask(time = it) },
             onConfirm = { title, dueDate, rutinaId, location ->
                 tareaViewModel.createTarea(title, "", dueDate, rutinaId, location)
-                showAddTareaDialog = false
-                selectedRutinaForTask = null
+                tareaViewModel.clearDraft()
             },
             onPickLocation = onPickLocation,
-            initialLocation = tareaState.pickedLocation,
         )
     }
 }

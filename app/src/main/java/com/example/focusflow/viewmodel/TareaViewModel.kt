@@ -19,7 +19,13 @@ data class TareaUiState(
     val pendingTareas: List<Tarea> = emptyList(),
     val completedTareas: List<Tarea> = emptyList(),
     val isLoading: Boolean = true,
-    val pickedLocation: String = ""
+    
+    // Estado para el formulario de Nueva Tarea
+    val pendingTaskTitle: String = "",
+    val pendingTaskRutinaId: Int? = null,
+    val pendingTaskTime: Pair<Int, Int>? = null,
+    val pickedLocation: String = "",
+    val isShowingAddDialog: Boolean = false
 )
 
 @HiltViewModel
@@ -50,7 +56,6 @@ class TareaViewModel @Inject constructor(
 
     private suspend fun checkAndActivateOverdue() {
         val now = System.currentTimeMillis()
-        // Usamos el estado actual para evitar lecturas constantes a DB
         val toActivate = _uiState.value.pendingTareas.filter { 
             it.dueDate != null && it.dueDate <= now 
         }
@@ -64,7 +69,6 @@ class TareaViewModel @Inject constructor(
         val userId = authRepository.getUserId()
         if (userId.isBlank()) return
 
-        // Intentar descargar nuevas tareas desde Firebase
         viewModelScope.launch {
             tareaRepository.fetchTareasFromFirebase()
         }
@@ -77,20 +81,54 @@ class TareaViewModel @Inject constructor(
                     completedTareas = tareas.filter { it.status == Tarea.STATUS_COMPLETED },
                     isLoading = false
                 )
-                // Después de cargar el estado, verificar si hay que activar algo
                 checkAndActivateOverdue()
             }
         }
     }
 
+    // Funciones para actualizar el formulario temporalmente
+    fun updateDraftTask(
+        title: String? = null,
+        rutinaId: Int? = null,
+        time: Pair<Int, Int>? = null,
+        showDialog: Boolean? = null
+    ) {
+        _uiState.value = _uiState.value.copy(
+            pendingTaskTitle = title ?: _uiState.value.pendingTaskTitle,
+            pendingTaskRutinaId = rutinaId ?: _uiState.value.pendingTaskRutinaId,
+            pendingTaskTime = time ?: _uiState.value.pendingTaskTime,
+            isShowingAddDialog = showDialog ?: _uiState.value.isShowingAddDialog
+        )
+    }
+
     fun setPickedLocation(location: String) {
-        _uiState.value = _uiState.value.copy(pickedLocation = location)
+        _uiState.value = _uiState.value.copy(
+            pickedLocation = location,
+            isShowingAddDialog = true
+        )
+    }
+
+    fun clearDraft() {
+        _uiState.value = _uiState.value.copy(
+            pendingTaskTitle = "",
+            pendingTaskRutinaId = null,
+            pendingTaskTime = null,
+            pickedLocation = "",
+            isShowingAddDialog = false
+        )
     }
 
     fun createTarea(title: String, description: String, dueDate: Long?, rutinaId: Int, location: String = "") {
         viewModelScope.launch {
             val userId = authRepository.getUserId()
             
+            // Convertir coordenadas a dirección si es necesario
+            val finalLocation = if (location.contains(",")) {
+                tareaRepository.getAddressFromCoords(location)
+            } else {
+                location
+            }
+
             val currentTime = System.currentTimeMillis()
             val status = if (dueDate != null && dueDate > currentTime) {
                 Tarea.STATUS_PENDING
@@ -106,7 +144,7 @@ class TareaViewModel @Inject constructor(
                 rutinaId = rutinaId,
                 userId = userId,
                 status = status,
-                location = location
+                location = finalLocation
             )
             tareaRepository.createTarea(tarea)
             _uiState.value = _uiState.value.copy(pickedLocation = "")

@@ -48,11 +48,17 @@ fun AddTareaDialog(
     onConfirm: (title: String, dueDate: Long?, rutinaId: Int, location: String) -> Unit,
     onPickLocation: () -> Unit,
     initialLocation: String = "",
+    // Nuevos campos para mantener el estado
+    initialTitle: String = "",
+    initialTime: Pair<Int, Int>? = null,
+    onTitleChange: (String) -> Unit = {},
+    onRutinaChange: (Rutina) -> Unit = {},
+    onTimeChange: (Pair<Int, Int>) -> Unit = {},
 ) {
-    var title by remember { mutableStateOf("") }
-    var selectedRutina by remember { mutableStateOf(initialRutina) }
+    var title by remember(initialTitle) { mutableStateOf(initialTitle) }
+    var selectedRutina by remember(initialRutina) { mutableStateOf(initialRutina) }
     var expanded by remember { mutableStateOf(false) }
-    var selectedTime by remember { mutableStateOf<Pair<Int, Int>?>(null) }
+    var selectedTime by remember(initialTime) { mutableStateOf(initialTime) }
     var location by remember(initialLocation) { mutableStateOf(initialLocation) }
     val context = LocalContext.current
 
@@ -77,7 +83,6 @@ fun AddTareaDialog(
                             cal.timeInMillis
                         }
                         onConfirm(title.trim(), dueDate, selectedRutina!!.id, location)
-                        onDismiss()
                     }
                 },
                 enabled = title.isNotBlank() && selectedRutina != null,
@@ -108,7 +113,10 @@ fun AddTareaDialog(
             Column {
                 OutlinedTextField(
                     value = title,
-                    onValueChange = { title = it },
+                    onValueChange = { 
+                        title = it 
+                        onTitleChange(it)
+                    },
                     label = { Text("Nombre de la tarea") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
@@ -141,6 +149,7 @@ fun AddTareaDialog(
                                 text = { Text(rutina.name) },
                                 onClick = {
                                     selectedRutina = rutina
+                                    onRutinaChange(rutina)
                                     expanded = false
                                 },
                             )
@@ -166,7 +175,6 @@ fun AddTareaDialog(
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(12.dp),
                         )
-                        // Overlay invisible para capturar el clic
                         Box(
                             modifier = Modifier
                                 .matchParentSize()
@@ -176,9 +184,10 @@ fun AddTareaDialog(
                                         context,
                                         { _, hour, minute ->
                                             selectedTime = Pair(hour, minute)
+                                            onTimeChange(Pair(hour, minute))
                                         },
-                                        now.get(Calendar.HOUR_OF_DAY),
-                                        now.get(Calendar.MINUTE),
+                                        selectedTime?.first ?: now.get(Calendar.HOUR_OF_DAY),
+                                        selectedTime?.second ?: now.get(Calendar.MINUTE),
                                         true,
                                     ).show()
                                 }

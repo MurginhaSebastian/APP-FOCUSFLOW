@@ -53,22 +53,27 @@ import com.example.focusflow.ui.tasks.AddChoiceDialog
 import com.example.focusflow.ui.tasks.AddRutinaDialog
 import com.example.focusflow.ui.tasks.AddTareaDialog
 import com.example.focusflow.viewmodel.HomeViewModel
+import com.example.focusflow.viewmodel.TareaViewModel
 
 @Composable
 fun EnlaceScreen(
     modifier: Modifier = Modifier,
     onNavigateToQR: () -> Unit = {},
+    onPickLocation: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel(),
     qrViewModel: QRViewModel = hiltViewModel(),
+    tareaViewModel: TareaViewModel = hiltViewModel(),
 ) {
     val state by viewModel.uiState.collectAsState()
     val qrUiState by qrViewModel.uiState.collectAsState()
+    val tareaState by tareaViewModel.uiState.collectAsState()
     val linkedEmail by qrViewModel.linkedEmail.collectAsState(initial = null)
 
     var showAddOptions by remember { mutableStateOf(false) }
     var showAddRutinaDialog by remember { mutableStateOf(false) }
-    var showAddTareaDialog by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
+
+    val selectedRutinaForTask = qrUiState.rutinas.find { it.id == tareaState.pendingTaskRutinaId } ?: qrUiState.rutinas.firstOrNull()
 
     val qrContent = "focusflow:enlace:${state.userEmail.replace(".", "_")}"
     val qrBitmap = remember(qrContent) {
@@ -296,7 +301,10 @@ fun EnlaceScreen(
             },
             onAddTarea = {
                 showAddOptions = false
-                showAddTareaDialog = true
+                tareaViewModel.updateDraftTask(
+                    rutinaId = qrUiState.rutinas.firstOrNull()?.id,
+                    showDialog = true
+                )
             }
         )
     }
@@ -313,15 +321,24 @@ fun EnlaceScreen(
         )
     }
 
-    if (showAddTareaDialog && linkedEmail != null) {
+    if (tareaState.isShowingAddDialog && linkedEmail != null && selectedRutinaForTask != null) {
         AddTareaDialog(
             rutinas = qrUiState.rutinas,
-            onDismiss = { showAddTareaDialog = false },
+            initialRutina = selectedRutinaForTask,
+            initialTitle = tareaState.pendingTaskTitle,
+            initialTime = tareaState.pendingTaskTime,
+            initialLocation = tareaState.pickedLocation,
+            onDismiss = {
+                tareaViewModel.clearDraft()
+            },
+            onTitleChange = { tareaViewModel.updateDraftTask(title = it) },
+            onRutinaChange = { tareaViewModel.updateDraftTask(rutinaId = it.id) },
+            onTimeChange = { tareaViewModel.updateDraftTask(time = it) },
             onConfirm = { title, dueDate, rutinaId, location ->
                 qrViewModel.assignTarea(title, dueDate, rutinaId, location, linkedEmail!!)
-                showAddTareaDialog = false
+                tareaViewModel.clearDraft()
             },
-            onPickLocation = { /* Opcional: implementar navegación a mapa si es necesario */ }
+            onPickLocation = onPickLocation
         )
     }
 

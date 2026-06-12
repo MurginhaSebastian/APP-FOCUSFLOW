@@ -1,6 +1,7 @@
 package com.example.focusflow.data.repository
 
 import android.content.Context
+import android.location.Geocoder
 import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
@@ -19,6 +20,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.withContext
+import java.util.Locale
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -248,5 +251,28 @@ class TareaRepository @Inject constructor(
 
     fun getTareasByRutina(rutinaId: Int): Flow<List<Tarea>> {
         return tareaDao.getTareasByRutina(rutinaId)
+    }
+
+    suspend fun getAddressFromCoords(latLngString: String): String {
+        return withContext(Dispatchers.IO) {
+            try {
+                val parts = latLngString.split(",")
+                if (parts.size != 2) return@withContext latLngString
+
+                val lat = parts[0].trim().toDouble()
+                val lng = parts[1].trim().toDouble()
+
+                val geocoder = Geocoder(context, Locale.getDefault())
+                val addresses = geocoder.getFromLocation(lat, lng, 1)
+
+                if (!addresses.isNullOrEmpty()) {
+                    addresses[0].getAddressLine(0) ?: "Ubicación sin nombre"
+                } else {
+                    "Coordenadas: $lat, $lng"
+                }
+            } catch (e: Exception) {
+                latLngString
+            }
+        }
     }
 }
