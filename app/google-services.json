@@ -71,6 +71,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "252611340986-71krgg3bljnt0gcei42lbo47encvoa53.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.neocode.FocusFlow",
+            "certificate_hash": "d9318dafa79e1f1f31d12b49815bcef0e58c6f3b"
+          }
+        },
+        {
           "client_id": "252611340986-nfagcmugmpcl5peo4mtgcpclekglk1j7.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

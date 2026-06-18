@@ -1,5 +1,6 @@
 package com.example.focusflow.data.model
 
+import com.google.firebase.database.PropertyName
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -9,7 +10,11 @@ data class Tarea(
     val id: Int = 0,
     val title: String = "",
     val description: String = "",
-    val isCompleted: Boolean = false,
+    
+    @get:PropertyName("completed")
+    @set:PropertyName("completed")
+    var isCompleted: Boolean = false,
+
     val status: String = STATUS_PENDING,
     val dueDate: Long? = null,
     val location: String = "",

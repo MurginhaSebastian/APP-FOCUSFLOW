@@ -214,9 +214,9 @@ fun MainScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(innerPadding),
-                    onNavigateToQR = { /* Navegar a QR si existe ruta */ },
+                    onNavigateToQR = { selectedIndex = 3 },
                     onPickLocation = {
-                        navController.navigate("map_picker")
+                        navController.navigate(Routes.MAP_PICKER)
                     },
                     tareaViewModel = tareaViewModel
                 )
