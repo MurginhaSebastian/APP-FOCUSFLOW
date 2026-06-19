@@ -55,7 +55,7 @@ fun LoginScreen(
     val uiState by viewModel.uiState.collectAsState()
 
     val googleSignInOptions = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-        .requestIdToken(context.getString(R.string.default_web_client_id))
+        .requestIdToken("252611340986-4lt6ivp6dqe7n16qdk8uk6q1oi521iu2.apps.googleusercontent.com")
         .requestEmail()
         .build()
 
