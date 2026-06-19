@@ -25,7 +25,8 @@ data class TareaUiState(
     val pendingTaskRutinaId: Int? = null,
     val pendingTaskTime: Pair<Int, Int>? = null,
     val pickedLocation: String = "",
-    val isShowingAddDialog: Boolean = false
+    val isShowingAddDialog: Boolean = false,
+    val showWelcomeBrazuca: Boolean = false
 )
 
 @HiltViewModel
@@ -37,9 +38,22 @@ class TareaViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(TareaUiState())
     val uiState: StateFlow<TareaUiState> = _uiState.asStateFlow()
 
+    private var welcomeShown = false
+
     init {
         loadTareas()
         startWatchdog()
+    }
+
+    fun triggerWelcomeBrazuca() {
+        if (!welcomeShown) {
+            welcomeShown = true
+            _uiState.value = _uiState.value.copy(showWelcomeBrazuca = true)
+            viewModelScope.launch {
+                delay(6000)
+                _uiState.value = _uiState.value.copy(showWelcomeBrazuca = false)
+            }
+        }
     }
 
     private fun startWatchdog() {

@@ -36,6 +36,7 @@ data class HomeUiState(
     val moodMessage: String? = null,
     val moodRoutine: String? = null,
     val showWeatherSuggestion: Boolean = true,
+    val showWelcomeBrazuca: Boolean = false,
 )
 
 @HiltViewModel
@@ -49,6 +50,8 @@ class HomeViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(HomeUiState())
     val uiState: StateFlow<HomeUiState> = _uiState.asStateFlow()
+
+    private var welcomeShown = false
 
     private val moodPhrases = mapOf(
         Mood.SERIO to listOf(
@@ -70,6 +73,17 @@ class HomeViewModel @Inject constructor(
 
     init {
         loadHome()
+    }
+
+    fun triggerWelcomeBrazuca() {
+        if (!welcomeShown) {
+            welcomeShown = true
+            _uiState.value = _uiState.value.copy(showWelcomeBrazuca = true)
+            viewModelScope.launch {
+                kotlinx.coroutines.delay(6000)
+                _uiState.value = _uiState.value.copy(showWelcomeBrazuca = false)
+            }
+        }
     }
 
     private fun loadHome() {
@@ -98,30 +112,27 @@ class HomeViewModel @Inject constructor(
         if (userId.isNotBlank()) {
             viewModelScope.launch {
                 tareaRepository.getTareasByUser(userId).collect { tareas ->
-                    val currentTime = System.currentTimeMillis()
                     val calendar = java.util.Calendar.getInstance()
                     
-                    // Configurar inicio del día (00:00:00)
                     calendar.set(java.util.Calendar.HOUR_OF_DAY, 0)
                     calendar.set(java.util.Calendar.MINUTE, 0)
                     calendar.set(java.util.Calendar.SECOND, 0)
                     calendar.set(java.util.Calendar.MILLISECOND, 0)
                     val startOfDay = calendar.timeInMillis
                     
-                    // Configurar fin del día (23:59:59)
                     calendar.set(java.util.Calendar.HOUR_OF_DAY, 23)
                     calendar.set(java.util.Calendar.MINUTE, 59)
                     calendar.set(java.util.Calendar.SECOND, 59)
                     calendar.set(java.util.Calendar.MILLISECOND, 999)
                     val endOfDay = calendar.timeInMillis
 
-                    // Filtrar tareas que son para HOY (según dueDate)
                     val todayTareas = tareas.filter { it.dueDate != null && it.dueDate in startOfDay..endOfDay }
                     
                     val totalTareas = todayTareas.size
                     val completedTareas = todayTareas.count { it.isCompleted || it.status == Tarea.STATUS_COMPLETED }
                     val progress = if (totalTareas > 0) completedTareas.toFloat() / totalTareas else 0f
 
+                    val currentTime = System.currentTimeMillis()
                     val oneHourInMillis = 60 * 60 * 1000L
 
                     val activeTareas = tareas.filter { it.status == Tarea.STATUS_ACTIVE }

@@ -54,6 +54,7 @@ import com.example.focusflow.ui.tasks.AddRutinaDialog
 import com.example.focusflow.ui.tasks.AddTareaDialog
 import com.example.focusflow.viewmodel.HomeViewModel
 import com.example.focusflow.viewmodel.TareaViewModel
+import com.example.focusflow.ui.components.BrazucaGuide
 
 @Composable
 fun EnlaceScreen(
@@ -91,205 +92,213 @@ fun EnlaceScreen(
         }
     }
 
-    Scaffold(
-        modifier = modifier,
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
-    ) { innerPadding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp),
-        ) {
-            item {
-                Spacer(modifier = Modifier.height(16.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = "¡Bienvenido, ${state.userName}!",
-                            style = MaterialTheme.typography.headlineSmall,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
-                    if (state.photoUrl.isNotBlank()) {
-                        AsyncImage(
-                            model = state.photoUrl,
-                            contentDescription = "Foto de perfil",
-                            modifier = Modifier
-                                .size(48.dp)
-                                .clip(MaterialTheme.shapes.extraLarge),
-                        )
+    Box(modifier = modifier.fillMaxSize()) {
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+        ) { innerPadding ->
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(horizontal = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(24.dp),
+            ) {
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = "¡Bienvenido, ${state.userName}!",
+                                style = MaterialTheme.typography.headlineSmall,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                        if (state.photoUrl.isNotBlank()) {
+                            AsyncImage(
+                                model = state.photoUrl,
+                                contentDescription = "Foto de perfil",
+                                modifier = Modifier
+                                    .size(48.dp)
+                                    .clip(MaterialTheme.shapes.extraLarge),
+                            )
+                        }
                     }
                 }
-            }
 
-            item {
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                    ),
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .padding(24.dp)
-                            .fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally,
+                item {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(24.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                        ),
                     ) {
-                        Text(
-                            text = "Tu Código de Enlace Único",
-                            style = MaterialTheme.typography.titleLarge,
-                            textAlign = TextAlign.Center,
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "Usa este código para vincular tu cuenta con otros dispositivos.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            textAlign = TextAlign.Center,
-                        )
+                        Column(
+                            modifier = Modifier
+                                .padding(24.dp)
+                                .fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            Text(
+                                text = "Tu Código de Enlace Único",
+                                style = MaterialTheme.typography.titleLarge,
+                                textAlign = TextAlign.Center,
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "Usa este código para vincular tu cuenta con otros dispositivos.",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                textAlign = TextAlign.Center,
+                            )
 
-                        Spacer(modifier = Modifier.height(24.dp))
+                            Spacer(modifier = Modifier.height(24.dp))
 
-                        if (qrBitmap != null) {
-                            Surface(
-                                modifier = Modifier
-                                    .size(220.dp)
-                                    .clip(MaterialTheme.shapes.large),
-                                color = Color.White,
-                                tonalElevation = 4.dp,
-                            ) {
-                                Image(
-                                    bitmap = qrBitmap.asImageBitmap(),
-                                    contentDescription = "Código QR de usuario",
+                            if (qrBitmap != null) {
+                                Surface(
                                     modifier = Modifier
-                                        .fillMaxSize()
-                                        .padding(12.dp),
-                                )
+                                        .size(220.dp)
+                                        .clip(MaterialTheme.shapes.large),
+                                    color = Color.White,
+                                    tonalElevation = 4.dp,
+                                ) {
+                                    Image(
+                                        bitmap = qrBitmap.asImageBitmap(),
+                                        contentDescription = "Código QR de usuario",
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .padding(12.dp),
+                                    )
+                                }
+                            } else {
+                                Box(
+                                    modifier = Modifier.size(220.dp),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    CircularProgressIndicator()
+                                }
                             }
-                        } else {
-                            Box(
-                                modifier = Modifier.size(220.dp),
-                                contentAlignment = Alignment.Center,
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Text(
+                                text = "ID: ${state.userId}",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                        }
+                    }
+                }
+
+                if (linkedEmail != null) {
+                    item {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f),
+                            ),
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
                             ) {
-                                CircularProgressIndicator()
+                                Icon(
+                                    imageVector = Icons.Default.Link,
+                                    contentDescription = "Vinculado",
+                                    tint = MaterialTheme.colorScheme.secondary,
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Column {
+                                    Text(
+                                        text = "Vinculado con:",
+                                        style = MaterialTheme.typography.labelMedium,
+                                    )
+                                    Text(
+                                        text = linkedEmail!!.replace("_", "."),
+                                        style = MaterialTheme.typography.bodyLarge,
+                                    )
+                                }
                             }
                         }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        Text(
-                            text = "ID: ${state.userId}",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.primary,
-                        )
                     }
                 }
-            }
 
-            if (linkedEmail != null) {
                 item {
+                    Text(
+                        text = "Acciones rápidas",
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(16.dp),
                         colors = CardDefaults.cardColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.3f),
+                            containerColor = if (linkedEmail == null) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
+                            else MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.4f),
                         ),
                     ) {
                         Row(
-                            modifier = Modifier.padding(16.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
                             verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween,
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Link,
-                                contentDescription = "Vinculado",
-                                tint = MaterialTheme.colorScheme.secondary,
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Column {
+                            Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "Vinculado con:",
-                                    style = MaterialTheme.typography.labelMedium,
+                                    text = if (linkedEmail == null) "Vincular Dispositivo" else "Gestionar Tareas",
+                                    style = MaterialTheme.typography.bodyLarge,
                                 )
                                 Text(
-                                    text = linkedEmail!!.replace("_", "."),
-                                    style = MaterialTheme.typography.bodyLarge,
+                                    text = if (linkedEmail == null) "Escanea un QR para conectar" else "Asigna rutinas o tareas al usuario",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                            FloatingActionButton(
+                                onClick = {
+                                    if (linkedEmail == null) onNavigateToQR()
+                                    else showAddOptions = true
+                                },
+                                containerColor = if (linkedEmail == null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary,
+                                modifier = Modifier.size(40.dp),
+                                elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp),
+                            ) {
+                                Icon(
+                                    imageVector = if (linkedEmail == null) Icons.Default.QrCodeScanner else Icons.Default.Add,
+                                    contentDescription = if (linkedEmail == null) "Escanear QR" else "Agregar tarea",
                                 )
                             }
                         }
                     }
                 }
-            }
 
-            item {
-                Text(
-                    text = "Acciones rápidas",
-                    style = MaterialTheme.typography.titleMedium,
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = if (linkedEmail == null) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.4f)
-                        else MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.4f),
-                    ),
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = if (linkedEmail == null) "Vincular Dispositivo" else "Gestionar Tareas",
-                                style = MaterialTheme.typography.bodyLarge,
-                            )
-                            Text(
-                                text = if (linkedEmail == null) "Escanea un QR para conectar" else "Asigna rutinas o tareas al usuario",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                        FloatingActionButton(
-                            onClick = {
-                                if (linkedEmail == null) onNavigateToQR()
-                                else showAddOptions = true
-                            },
-                            containerColor = if (linkedEmail == null) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary,
-                            contentColor = MaterialTheme.colorScheme.onPrimary,
-                            modifier = Modifier.size(40.dp),
-                            elevation = FloatingActionButtonDefaults.elevation(0.dp, 0.dp),
-                        ) {
-                            Icon(
-                                imageVector = if (linkedEmail == null) Icons.Default.QrCodeScanner else Icons.Default.Add,
-                                contentDescription = if (linkedEmail == null) "Escanear QR" else "Agregar tarea",
-                            )
-                        }
-                    }
+                item {
+                    Text(
+                        text = "Nota: Este código es privado. No lo compartas con personas en las que no confíes.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
                 }
             }
-
-            item {
-                Text(
-                    text = "Nota: Este código es privado. No lo compartas con personas en las que no confíes.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.error,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-            }
         }
+
+        BrazucaGuide(
+            visible = qrUiState.showWelcomeBrazuca,
+            message = "Sincroniza tus dispositivos y colabora con otros para alcanzar el éxito juntos.",
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 
     if (showAddOptions) {

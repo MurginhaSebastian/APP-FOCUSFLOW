@@ -26,7 +26,8 @@ data class FocusUiState(
     val focusDuration: Int = 25,
     val breakDuration: Int = 5,
     val longBreakDuration: Int = 15,
-    val isRunning: Boolean = false
+    val isRunning: Boolean = false,
+    val showWelcomeBrazuca: Boolean = false
 )
 
 @HiltViewModel
@@ -37,6 +38,8 @@ class FocusViewModel @Inject constructor(
 
     private val _uiState = MutableStateFlow(FocusUiState())
     val uiState: StateFlow<FocusUiState> = _uiState.asStateFlow()
+
+    private var welcomeShown = false
 
     private var timerJob: Job? = null
 
@@ -52,6 +55,17 @@ class FocusViewModel @Inject constructor(
         }
         viewModelScope.launch {
             settingsRepository.cycles.collect { _uiState.value = _uiState.value.copy(totalCycles = it) }
+        }
+    }
+
+    fun triggerWelcomeBrazuca() {
+        if (!welcomeShown) {
+            welcomeShown = true
+            _uiState.value = _uiState.value.copy(showWelcomeBrazuca = true)
+            viewModelScope.launch {
+                delay(6000)
+                _uiState.value = _uiState.value.copy(showWelcomeBrazuca = false)
+            }
         }
     }
 

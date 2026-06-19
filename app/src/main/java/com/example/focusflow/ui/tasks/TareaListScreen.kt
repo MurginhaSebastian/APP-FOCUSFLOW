@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.focusflow.data.model.Rutina
 import com.example.focusflow.data.model.Tarea
+import com.example.focusflow.ui.components.BrazucaGuide
 import com.example.focusflow.ui.components.BadgeStatus
 import com.example.focusflow.ui.components.EmptyState
 import com.example.focusflow.ui.components.FocusFlowCard
@@ -57,7 +58,18 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.rememberModalBottomSheetState
-import com.example.focusflow.ui.home.HomeScreen
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import com.example.focusflow.R
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -90,12 +102,13 @@ fun TareaListScreen(
     // Sincronizar la rutina seleccionada del estado del ViewModel
     val selectedRutinaForTask = allRutinas.find { it.id == tareaState.pendingTaskRutinaId } ?: allRutinas.firstOrNull()
 
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = Spacing.xmd),
-        verticalArrangement = Arrangement.spacedBy(Spacing.md),
-    ) {
+    Box(modifier = modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = Spacing.xmd),
+            verticalArrangement = Arrangement.spacedBy(Spacing.md),
+        ) {
         item {
             Spacer(modifier = Modifier.height(Spacing.xs))
             Row(
@@ -287,6 +300,13 @@ fun TareaListScreen(
             )
         }
     }
+
+    BrazucaGuide(
+        visible = tareaState.showWelcomeBrazuca,
+        message = "Organiza tus pendientes y convierte tus metas en logros reales.",
+        modifier = Modifier.align(Alignment.BottomCenter)
+    )
+}
 }
 
 @Composable

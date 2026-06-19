@@ -36,6 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.focusflow.ui.components.BrazucaGuide
 import com.google.zxing.BinaryBitmap
 import com.google.zxing.MultiFormatReader
 import com.google.zxing.RGBLuminanceSource
@@ -149,6 +150,12 @@ fun QRScreen(
             Spacer(modifier = Modifier.height(24.dp))
             CircularProgressIndicator()
         }
+
+        BrazucaGuide(
+            visible = state.showWelcomeBrazuca,
+            message = "Sincroniza tu mundo y colabora compartiendo tareas con otros.",
+            modifier = Modifier.padding(top = 32.dp)
+        )
     }
 }
 

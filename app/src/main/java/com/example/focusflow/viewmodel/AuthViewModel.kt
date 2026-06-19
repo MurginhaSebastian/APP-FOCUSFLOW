@@ -15,7 +15,8 @@ import javax.inject.Inject
 data class AuthUiState(
     val isLoading: Boolean = false,
     val isLoggedIn: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    val showWelcomeBrazuca: Boolean = false
 )
 
 @HiltViewModel
@@ -28,12 +29,26 @@ class AuthViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(AuthUiState())
     val uiState: StateFlow<AuthUiState> = _uiState.asStateFlow()
 
+    private var welcomeShown = false
+
     init {
         val loggedIn = authRepository.isLoggedIn
         _uiState.value = _uiState.value.copy(isLoggedIn = loggedIn)
         if (loggedIn) {
             viewModelScope.launch {
                 syncData()
+            }
+        }
+        showBrazucaOnce()
+    }
+
+    private fun showBrazucaOnce() {
+        if (!welcomeShown) {
+            _uiState.value = _uiState.value.copy(showWelcomeBrazuca = true)
+            viewModelScope.launch {
+                kotlinx.coroutines.delay(6000)
+                _uiState.value = _uiState.value.copy(showWelcomeBrazuca = false)
+                welcomeShown = true
             }
         }
     }

@@ -1,6 +1,13 @@
 package com.example.focusflow.ui.home
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -39,11 +47,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.focusflow.R
 import com.example.focusflow.data.model.Tarea
 import com.example.focusflow.ui.components.BadgeStatus
+import com.example.focusflow.ui.components.BrazucaGuide
 import com.example.focusflow.ui.components.FocusFlowCard
 import com.example.focusflow.ui.components.Mood
 import com.example.focusflow.ui.components.MoodSelectorSheet
@@ -51,6 +65,7 @@ import com.example.focusflow.ui.components.StatusBadge
 import com.example.focusflow.ui.components.UserGreetingRow
 import com.example.focusflow.ui.theme.Spacing
 import com.example.focusflow.viewmodel.HomeViewModel
+import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -88,12 +103,13 @@ fun HomeScreen(
         )
     }
 
-    LazyColumn(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = Spacing.xmd),
-        verticalArrangement = Arrangement.spacedBy(Spacing.lg),
-    ) {
+    Box(modifier = modifier.fillMaxSize()) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = Spacing.xmd),
+            verticalArrangement = Arrangement.spacedBy(Spacing.lg),
+        ) {
         item {
             Spacer(modifier = Modifier.height(Spacing.xs))
             Row(
@@ -469,6 +485,14 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(Spacing.lg))
         }
     }
+
+    // Personaje Brazuca y globo con frase de Inicio (CENTRALIZADO)
+    BrazucaGuide(
+        visible = state.showWelcomeBrazuca,
+        message = "Visualiza tu progreso diario y mantén viva tu racha de éxito.",
+        modifier = Modifier.align(Alignment.BottomCenter)
+    )
+}
 }
 
 @Composable

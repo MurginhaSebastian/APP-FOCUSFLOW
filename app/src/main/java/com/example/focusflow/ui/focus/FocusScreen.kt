@@ -9,6 +9,10 @@ import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.togetherWith
 import android.view.HapticFeedbackConstants
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +24,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Cancel
@@ -38,6 +43,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Slider
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -47,13 +53,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.focusflow.R
+import com.example.focusflow.ui.components.BrazucaGuide
 import com.example.focusflow.ui.components.FocusFlowCard
 import com.example.focusflow.ui.theme.Spacing
 import com.example.focusflow.viewmodel.FocusPhase
 import com.example.focusflow.viewmodel.FocusViewModel
+import androidx.compose.animation.AnimatedVisibility
 
 @Composable
 fun FocusScreen(
@@ -63,32 +74,40 @@ fun FocusScreen(
     val state by viewModel.uiState.collectAsState()
     val view = LocalView.current
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = Spacing.md),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        Spacer(modifier = Modifier.height(Spacing.xl))
+    Box(modifier = modifier.fillMaxSize()) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = Spacing.md),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Spacer(modifier = Modifier.height(Spacing.xl))
 
-        AnimatedContent(
-            targetState = state.phase,
-            transitionSpec = {
-                (fadeIn(tween(300)) + slideInVertically(tween(300)) { it / 4 }) togetherWith
-                    (fadeOut(tween(200)) + slideOutVertically(tween(200)) { -it / 4 })
-            },
-            label = "focus_phase",
-        ) { phase ->
-            when (phase) {
-                FocusPhase.IDLE -> IdleContent(state, viewModel)
-                FocusPhase.FOCUSING -> ActiveContent(state, viewModel, "ENFOQUE")
-                FocusPhase.BREAK, FocusPhase.LONG_BREAK -> ActiveContent(
-                    state, viewModel,
-                    if (phase == FocusPhase.LONG_BREAK) "DESCANSO LARGO" else "DESCANSO",
-                )
-                FocusPhase.FINISHED -> FinishedContent(state, viewModel)
+            AnimatedContent(
+                targetState = state.phase,
+                transitionSpec = {
+                    (fadeIn(tween(300)) + slideInVertically(tween(300)) { it / 4 }) togetherWith
+                            (fadeOut(tween(200)) + slideOutVertically(tween(200)) { -it / 4 })
+                },
+                label = "focus_phase",
+            ) { phase ->
+                when (phase) {
+                    FocusPhase.IDLE -> IdleContent(state, viewModel)
+                    FocusPhase.FOCUSING -> ActiveContent(state, viewModel, "ENFOQUE")
+                    FocusPhase.BREAK, FocusPhase.LONG_BREAK -> ActiveContent(
+                        state, viewModel,
+                        if (phase == FocusPhase.LONG_BREAK) "DESCANSO LARGO" else "DESCANSO",
+                    )
+                    FocusPhase.FINISHED -> FinishedContent(state, viewModel)
+                }
             }
         }
+
+        BrazucaGuide(
+            visible = state.showWelcomeBrazuca,
+            message = "Entra en tu zona de máxima concentración y trabaja sin distracciones.",
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
     }
 }
 

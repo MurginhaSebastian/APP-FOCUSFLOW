@@ -19,6 +19,22 @@ class SmartViewModel @Inject constructor(
     private val _uiState = MutableStateFlow<SmartUiState>(SmartUiState.Idle)
     val uiState: StateFlow<SmartUiState> = _uiState.asStateFlow()
 
+    private val _screenState = MutableStateFlow(SmartScreenState())
+    val screenState: StateFlow<SmartScreenState> = _screenState.asStateFlow()
+
+    private var welcomeShown = false
+
+    fun triggerWelcomeBrazuca() {
+        if (!welcomeShown) {
+            welcomeShown = true
+            _screenState.value = _screenState.value.copy(showWelcomeBrazuca = true)
+            viewModelScope.launch {
+                kotlinx.coroutines.delay(6000)
+                _screenState.value = _screenState.value.copy(showWelcomeBrazuca = false)
+            }
+        }
+    }
+
     fun generarRutina(prompt: String) {
         viewModelScope.launch {
             _uiState.value = SmartUiState.Loading
@@ -50,3 +66,7 @@ sealed class SmartUiState {
     data class Error(val message: String) : SmartUiState()
     object RutinaAplicada : SmartUiState()
 }
+
+data class SmartScreenState(
+    val showWelcomeBrazuca: Boolean = false
+)

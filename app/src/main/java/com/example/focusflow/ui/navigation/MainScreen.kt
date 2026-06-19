@@ -46,6 +46,9 @@ import com.example.focusflow.viewmodel.AuthViewModel
 import com.example.focusflow.viewmodel.FocusPhase
 import com.example.focusflow.viewmodel.FocusViewModel
 import com.example.focusflow.viewmodel.TareaViewModel
+import com.example.focusflow.viewmodel.HomeViewModel
+import com.example.focusflow.viewmodel.SmartViewModel
+import com.example.focusflow.ui.qr.QRViewModel
 
 private data class BottomNavItem(
     val label: String,
@@ -69,6 +72,9 @@ fun MainScreen(
     authViewModel: AuthViewModel = hiltViewModel(),
     focusViewModel: FocusViewModel = hiltViewModel(),
     tareaViewModel: TareaViewModel = hiltViewModel(),
+    homeViewModel: HomeViewModel = hiltViewModel(),
+    smartViewModel: SmartViewModel = hiltViewModel(),
+    qrViewModel: QRViewModel = hiltViewModel(),
 ) {
     val uiState by authViewModel.uiState.collectAsState()
     var selectedIndex by rememberSaveable { mutableIntStateOf(0) }
@@ -94,6 +100,17 @@ fun MainScreen(
     LaunchedEffect(uiState.isLoggedIn) {
         if (!uiState.isLoggedIn) {
             onLogout()
+        }
+    }
+
+    // Disparar Brazuca según la sección seleccionada
+    LaunchedEffect(selectedIndex) {
+        when (selectedIndex) {
+            0 -> homeViewModel.triggerWelcomeBrazuca()
+            1 -> focusViewModel.triggerWelcomeBrazuca()
+            2 -> tareaViewModel.triggerWelcomeBrazuca()
+            3 -> smartViewModel.triggerWelcomeBrazuca()
+            4 -> qrViewModel.triggerWelcomeBrazuca()
         }
     }
 
@@ -191,11 +208,13 @@ fun MainScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(innerPadding),
+                    viewModel = homeViewModel
                 )
                 1 -> FocusScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(innerPadding),
+                    viewModel = focusViewModel
                 )
                 2 -> TareaListScreen(
                     modifier = Modifier
@@ -204,11 +223,13 @@ fun MainScreen(
                     onPickLocation = {
                         navController.navigate(Routes.MAP_PICKER)
                     },
+                    tareaViewModel = tareaViewModel
                 )
                 3 -> SmartScreen(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(innerPadding),
+                    viewModel = smartViewModel
                 )
                 4 -> EnlaceScreen(
                     modifier = Modifier
@@ -218,6 +239,8 @@ fun MainScreen(
                     onPickLocation = {
                         navController.navigate(Routes.MAP_PICKER)
                     },
+                    viewModel = homeViewModel,
+                    qrViewModel = qrViewModel,
                     tareaViewModel = tareaViewModel
                 )
             }

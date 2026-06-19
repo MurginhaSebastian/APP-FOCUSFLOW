@@ -22,7 +22,8 @@ data class QRUiState(
     val rutinas: List<Rutina> = emptyList(),
     val isAssigning: Boolean = false,
     val success: Boolean = false,
-    val infoMessage: String? = null
+    val infoMessage: String? = null,
+    val showWelcomeBrazuca: Boolean = false
 )
 
 @HiltViewModel
@@ -39,6 +40,8 @@ class QRViewModel @Inject constructor(
 
     val linkedEmail = settingsRepository.linkedUserEmail
 
+    private var welcomeShown = false
+
     init {
         viewModelScope.launch {
             linkedEmail.collect { email ->
@@ -47,6 +50,17 @@ class QRViewModel @Inject constructor(
                 } else {
                     loadLocalRutinas()
                 }
+            }
+        }
+    }
+
+    fun triggerWelcomeBrazuca() {
+        if (!welcomeShown) {
+            welcomeShown = true
+            _uiState.value = _uiState.value.copy(showWelcomeBrazuca = true)
+            viewModelScope.launch {
+                kotlinx.coroutines.delay(6000)
+                _uiState.value = _uiState.value.copy(showWelcomeBrazuca = false)
             }
         }
     }
