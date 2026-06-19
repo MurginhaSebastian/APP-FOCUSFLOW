@@ -25,5 +25,6 @@ data class Tarea(
         const val STATUS_PENDING = "PENDING"
         const val STATUS_ACTIVE = "ACTIVE"
         const val STATUS_COMPLETED = "COMPLETED"
+        const val STATUS_DELETED = "DELETED"
     }
 }

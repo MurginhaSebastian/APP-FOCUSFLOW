@@ -92,7 +92,19 @@ class TareaRepository @Inject constructor(
         val currentUserId = authRepository.getUserId()
         if (userKey.isNotEmpty()) {
             try {
-                tareasRef.child(userKey).get().await().children.forEach { child ->
+                val snapshot = tareasRef.child(userKey).get().await()
+                val firebaseTaskIds = snapshot.children.mapNotNull { it.child("id").getValue(Int::class.java) }.toSet()
+
+                // 1. Limpiar localmente lo que ya no está en Firebase
+                val localTasks = tareaDao.getAllTareasSync(currentUserId)
+                localTasks.forEach { local ->
+                    if (local.id !in firebaseTaskIds) {
+                        tareaDao.deleteTarea(local)
+                    }
+                }
+
+                // 2. Insertar o actualizar lo que viene de Firebase
+                snapshot.children.forEach { child ->
                     child.getValue(Tarea::class.java)?.let { tarea ->
                         val tareaToSave = if (tarea.userId == "remote") {
                             tarea.copy(userId = currentUserId)
@@ -115,6 +127,20 @@ class TareaRepository @Inject constructor(
         val userKey = authRepository.getSanitizedEmail()
         val currentUserId = authRepository.getUserId()
         if (userKey.isEmpty()) return
+
+        // Listener para borrado total del nodo
+        tareasRef.child(userKey).addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (!snapshot.exists()) {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        tareaDao.getAllTareasSync(currentUserId).forEach {
+                            tareaDao.deleteTarea(it)
+                        }
+                    }
+                }
+            }
+            override fun onCancelled(error: DatabaseError) {}
+        })
 
         tareasRef.child(userKey).addChildEventListener(object : com.google.firebase.database.ChildEventListener {
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {
@@ -161,6 +187,14 @@ class TareaRepository @Inject constructor(
 
     fun getTareasByStatus(userId: String, status: String): Flow<List<Tarea>> {
         return tareaDao.getTareasByStatus(userId, status)
+    }
+
+    fun getDeletedTareas(userId: String): Flow<List<Tarea>> {
+        return tareaDao.getDeletedTareas(userId)
+    }
+
+    fun getCompletedTareas(userId: String): Flow<List<Tarea>> {
+        return tareaDao.getCompletedTareas(userId)
     }
 
     suspend fun getTareaById(tareaId: Int): Tarea? {
@@ -211,9 +245,19 @@ class TareaRepository @Inject constructor(
     }
 
     suspend fun deleteTarea(tarea: Tarea) {
-        tareaDao.deleteTarea(tarea)
+        val deletedTarea = tarea.copy(status = Tarea.STATUS_DELETED)
+        updateTarea(deletedTarea)
         workManager.cancelUniqueWork("activate_task_${tarea.id}")
         workManager.cancelUniqueWork("review_task_${tarea.id}")
+    }
+
+    suspend fun restoreTarea(tarea: Tarea) {
+        val restoredTarea = tarea.copy(status = Tarea.STATUS_PENDING)
+        updateTarea(restoredTarea)
+    }
+
+    suspend fun permanentlyDeleteTarea(tarea: Tarea) {
+        tareaDao.deleteTarea(tarea)
         val userKey = authRepository.getSanitizedEmail()
         if (userKey.isNotEmpty()) {
             tareasRef.child(userKey).child(tarea.id.toString()).removeValue()

@@ -36,6 +36,17 @@ class RutinaRepository @Inject constructor(
         if (userKey.isNotEmpty()) {
             try {
                 val snapshot = rutinasRef.child(userKey).get().await()
+                val firebaseIds = snapshot.children.mapNotNull { it.child("id").getValue(Int::class.java) }.toSet()
+
+                // 1. Eliminar localmente lo que no esté en Firebase
+                val localItems = rutinaDao.getAllRutinasSync(currentUserId)
+                localItems.forEach { local ->
+                    if (local.id !in firebaseIds) {
+                        rutinaDao.deleteRutina(local)
+                    }
+                }
+
+                // 2. Insertar o actualizar lo que viene de Firebase
                 snapshot.children.forEach { child ->
                     child.getValue(Rutina::class.java)?.let { rutina ->
                         val rutinaToSave = if (rutina.userId == "remote") {
@@ -56,6 +67,20 @@ class RutinaRepository @Inject constructor(
         val userKey = authRepository.getSanitizedEmail()
         val currentUserId = authRepository.getUserId()
         if (userKey.isEmpty()) return
+
+        // Listener para borrado total del nodo
+        rutinasRef.child(userKey).addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (!snapshot.exists()) {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        rutinaDao.getAllRutinasSync(currentUserId).forEach {
+                            rutinaDao.deleteRutina(it)
+                        }
+                    }
+                }
+            }
+            override fun onCancelled(error: DatabaseError) {}
+        })
 
         rutinasRef.child(userKey).addChildEventListener(object : ChildEventListener {
             override fun onChildAdded(snapshot: DataSnapshot, previousChildName: String?) {

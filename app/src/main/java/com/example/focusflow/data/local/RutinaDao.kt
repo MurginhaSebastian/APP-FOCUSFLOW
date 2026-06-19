@@ -29,4 +29,7 @@ interface RutinaDao {
 
     @Query("DELETE FROM rutinas WHERE id = :rutinaId")
     suspend fun deleteRutinaById(rutinaId: Int)
+
+    @Query("SELECT * FROM rutinas WHERE userId = :userId")
+    suspend fun getAllRutinasSync(userId: String): List<Rutina>
 }

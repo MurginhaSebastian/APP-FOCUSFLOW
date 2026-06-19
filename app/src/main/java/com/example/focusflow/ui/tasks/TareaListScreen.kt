@@ -50,10 +50,19 @@ import com.example.focusflow.ui.components.StatusBadge
 import com.example.focusflow.ui.theme.Spacing
 import com.example.focusflow.viewmodel.RutinaViewModel
 import com.example.focusflow.viewmodel.TareaViewModel
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.material.icons.filled.Dashboard
+import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalIconButton
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
+import com.example.focusflow.ui.home.HomeScreen
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TareaListScreen(
     modifier: Modifier = Modifier,
@@ -66,6 +75,8 @@ fun TareaListScreen(
     val view = LocalView.current
     var showAddOptions by remember { mutableStateOf(false) }
     var showAddRutinaDialog by remember { mutableStateOf(false) }
+    var showDashboardSheet by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val allRutinas = rutinaState.rutinas
 
     val allActiveTareas = tareaState.activeTareas
@@ -96,15 +107,35 @@ fun TareaListScreen(
                     text = "Mis Tareas",
                     style = MaterialTheme.typography.headlineMedium,
                 )
-                FloatingActionButton(
-                    onClick = {
-                        view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
-                        showAddOptions = true
-                    },
-                    containerColor = MaterialTheme.colorScheme.primary,
-                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(Spacing.sm)
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = "Nueva")
+                    FilledTonalIconButton(
+                        onClick = {
+                            view.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY)
+                            showDashboardSheet = true
+                        },
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier.size(56.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Dashboard,
+                            contentDescription = "Ver Dashboard",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+
+                    FloatingActionButton(
+                        onClick = {
+                            view.performHapticFeedback(HapticFeedbackConstants.CONFIRM)
+                            showAddOptions = true
+                        },
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                    ) {
+                        Icon(Icons.Default.Add, contentDescription = "Nueva")
+                    }
                 }
             }
         }
@@ -242,6 +273,19 @@ fun TareaListScreen(
             },
             onPickLocation = onPickLocation,
         )
+    }
+
+    if (showDashboardSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showDashboardSheet = false },
+            sheetState = sheetState,
+            dragHandle = { BottomSheetDefaults.DragHandle() },
+            containerColor = MaterialTheme.colorScheme.surface,
+        ) {
+            com.example.focusflow.ui.stats.StatsScreen(
+                modifier = Modifier.fillMaxHeight(0.9f)
+            )
+        }
     }
 }
 

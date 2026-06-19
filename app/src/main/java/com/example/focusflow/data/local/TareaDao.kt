@@ -12,10 +12,10 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface TareaDao {
 
-    @Query("SELECT * FROM tareas WHERE userId = :userId ORDER BY dueDate ASC")
+    @Query("SELECT * FROM tareas WHERE userId = :userId AND status != 'DELETED' ORDER BY dueDate ASC")
     fun getTareasByUser(userId: String): Flow<List<Tarea>>
 
-    @Query("SELECT * FROM tareas WHERE rutinaId = :rutinaId ORDER BY dueDate ASC")
+    @Query("SELECT * FROM tareas WHERE rutinaId = :rutinaId AND status != 'DELETED' ORDER BY dueDate ASC")
     fun getTareasByRutina(rutinaId: Int): Flow<List<Tarea>>
 
     @Query("SELECT * FROM tareas WHERE id = :tareaId")
@@ -27,8 +27,14 @@ interface TareaDao {
     @Query("SELECT * FROM tareas WHERE userId = :userId AND status = 'ACTIVE' LIMIT 1")
     suspend fun getActiveTarea(userId: String): Tarea?
 
-    @Query("SELECT * FROM tareas WHERE userId = :userId AND status != 'COMPLETED' ORDER BY dueDate ASC LIMIT 1")
+    @Query("SELECT * FROM tareas WHERE userId = :userId AND status != 'COMPLETED' AND status != 'DELETED' ORDER BY dueDate ASC LIMIT 1")
     suspend fun getNextActiveTarea(userId: String): Tarea?
+
+    @Query("SELECT * FROM tareas WHERE userId = :userId AND status = 'DELETED' ORDER BY dueDate DESC")
+    fun getDeletedTareas(userId: String): Flow<List<Tarea>>
+
+    @Query("SELECT * FROM tareas WHERE userId = :userId AND status = 'COMPLETED' ORDER BY dueDate DESC")
+    fun getCompletedTareas(userId: String): Flow<List<Tarea>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTarea(tarea: Tarea): Long
@@ -44,4 +50,7 @@ interface TareaDao {
 
     @Query("SELECT * FROM tareas WHERE status = 'COMPLETED'")
     suspend fun getCompletedTareasSync(): List<Tarea>
+
+    @Query("SELECT * FROM tareas WHERE userId = :userId")
+    suspend fun getAllTareasSync(userId: String): List<Tarea>
 }
