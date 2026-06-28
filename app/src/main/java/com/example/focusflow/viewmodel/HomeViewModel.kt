@@ -37,6 +37,8 @@ data class HomeUiState(
     val moodRoutine: String? = null,
     val showWeatherSuggestion: Boolean = true,
     val showWelcomeBrazuca: Boolean = false,
+    val brazucaMessage: String = "Visualiza tu progreso diario y mantén viva tu racha de éxito.",
+    val showBrazuca: Boolean = false,
 )
 
 @HiltViewModel
@@ -78,10 +80,13 @@ class HomeViewModel @Inject constructor(
     fun triggerWelcomeBrazuca() {
         if (!welcomeShown) {
             welcomeShown = true
-            _uiState.value = _uiState.value.copy(showWelcomeBrazuca = true)
+            _uiState.value = _uiState.value.copy(
+                showBrazuca = true,
+                brazucaMessage = "Visualiza tu progreso diario y mantén viva tu racha de éxito."
+            )
             viewModelScope.launch {
                 kotlinx.coroutines.delay(6000)
-                _uiState.value = _uiState.value.copy(showWelcomeBrazuca = false)
+                _uiState.value = _uiState.value.copy(showBrazuca = false)
             }
         }
     }
@@ -163,7 +168,23 @@ class HomeViewModel @Inject constructor(
     }
 
     fun selectMood(mood: Mood) {
-        _uiState.value = _uiState.value.copy(currentMood = mood)
+        val message = when (mood) {
+            Mood.FELIZ -> "¡Qué buena vibra! Aprovecha este impulso de dopamina para completar esa tarea que has estado posponiendo. ¡A darle!"
+            Mood.SERIO -> "Ese enfoque está genial. Recuerda: si una tarea se ve muy grande, divídela en pasos pequeñitos. ¡Un paso a la vez!"
+            Mood.ENOJADO -> "Es normal sentirse frustrado. Tómate 2 minutos para respirar; yo guardaré tu lugar aquí para cuando estés listo."
+        }
+
+        _uiState.value = _uiState.value.copy(
+            currentMood = mood,
+            brazucaMessage = message,
+            showBrazuca = true
+        )
+
+        viewModelScope.launch {
+            kotlinx.coroutines.delay(6000)
+            _uiState.value = _uiState.value.copy(showBrazuca = false)
+        }
+
         if (mood == Mood.FELIZ) return
         val phrases = moodPhrases[mood] ?: return
         val phrase = phrases.random()

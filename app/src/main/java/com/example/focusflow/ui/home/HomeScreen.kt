@@ -22,6 +22,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FormatQuote
@@ -152,30 +155,44 @@ fun HomeScreen(
 
         item {
             val mood = state.currentMood
-            if (mood == null) {
-                FocusFlowCard(
-                    onClick = { showMoodSheet = true },
+            FocusFlowCard(
+                onClick = { showMoodSheet = true },
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Icon(
-                            Icons.Default.TaskAlt,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(32.dp),
-                        )
-                        Spacer(modifier = Modifier.width(Spacing.md))
-                        Text(
-                            text = "¿Cómo te sientes hoy?",
-                            style = MaterialTheme.typography.titleLarge,
-                            color = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.weight(1f),
-                        )
-                    }
+                    Icon(
+                        imageVector = when (mood) {
+                            Mood.FELIZ -> Icons.Default.Favorite
+                            Mood.SERIO -> Icons.Default.Visibility
+                            Mood.ENOJADO -> Icons.Default.Warning
+                            else -> Icons.Default.TaskAlt
+                        },
+                        contentDescription = null,
+                        tint = when (mood) {
+                            Mood.FELIZ -> androidx.compose.ui.graphics.Color(0xFF66BB6A)
+                            Mood.SERIO -> androidx.compose.ui.graphics.Color(0xFFFFA726)
+                            Mood.ENOJADO -> androidx.compose.ui.graphics.Color(0xFFEF5350)
+                            else -> MaterialTheme.colorScheme.primary
+                        },
+                        modifier = Modifier.size(32.dp),
+                    )
+                    Spacer(modifier = Modifier.width(Spacing.md))
+                    Text(
+                        text = if (mood == null) "¿Cómo te sientes hoy?" else "Hoy me siento ${mood.name.lowercase().replaceFirstChar { it.uppercase() }}",
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.weight(1f),
+                    )
                 }
-            } else if (mood != Mood.FELIZ) {
+            }
+        }
+
+        // Mostrar mensaje informativo adicional solo para estados que requieren rutina (Serio/Enojado)
+        if (state.currentMood != null && state.currentMood != Mood.FELIZ && state.moodMessage != null) {
+            item {
+                val mood = state.currentMood!!
                 val moodColor = if (mood == Mood.SERIO) {
                     MaterialTheme.colorScheme.tertiary
                 } else {
@@ -486,10 +503,10 @@ fun HomeScreen(
         }
     }
 
-    // Personaje Brazuca y globo con frase de Inicio (CENTRALIZADO)
+    // Personaje Brazuca y globo con frases dinámicas (Bienvenida y Co-regulación)
     BrazucaGuide(
-        visible = state.showWelcomeBrazuca,
-        message = "Visualiza tu progreso diario y mantén viva tu racha de éxito.",
+        visible = state.showBrazuca,
+        message = state.brazucaMessage,
         modifier = Modifier.align(Alignment.BottomCenter)
     )
 }
