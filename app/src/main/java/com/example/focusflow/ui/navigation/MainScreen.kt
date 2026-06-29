@@ -156,13 +156,7 @@ fun MainScreen(
                 bottomNavItems.forEachIndexed { index, item ->
                     NavigationBarItem(
                         selected = selectedIndex == index,
-                        onClick = {
-                            if (index != 1 && isFocusActive) {
-                                showFocusBlockedDialog = true
-                            } else {
-                                selectedIndex = index
-                            }
-                        },
+                        onClick = { selectedIndex = index },
                         icon = { Icon(item.icon, contentDescription = item.label) },
                         label = { Text(item.label) },
                     )

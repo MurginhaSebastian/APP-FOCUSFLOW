@@ -1,11 +1,17 @@
 package com.example.focusflow.viewmodel
 
 import android.app.Application
+import android.app.AppOpsManager
+import android.content.Context
+import android.content.Intent
 import android.media.RingtoneManager
 import android.net.Uri
+import android.os.Process
+import android.provider.Settings
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.focusflow.data.repository.SettingsRepository
+import com.example.focusflow.service.FocusBlockerService
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -27,7 +33,8 @@ data class FocusUiState(
     val breakDuration: Int = 5,
     val longBreakDuration: Int = 15,
     val isRunning: Boolean = false,
-    val showWelcomeBrazuca: Boolean = false
+    val showWelcomeBrazuca: Boolean = false,
+    val showPermissionDialog: Boolean = false
 )
 
 @HiltViewModel
@@ -90,6 +97,11 @@ class FocusViewModel @Inject constructor(
     }
 
     fun startFocus() {
+        if (!hasUsageStatsPermission() || !hasOverlayPermission()) {
+            _uiState.value = _uiState.value.copy(showPermissionDialog = true)
+            return
+        }
+
         val s = _uiState.value
         val totalSec = s.focusDuration * 60
         _uiState.value = s.copy(
@@ -100,6 +112,55 @@ class FocusViewModel @Inject constructor(
             isRunning = true
         )
         startTimer()
+        updateBlockerService()
+    }
+
+    fun dismissPermissionDialog() {
+        _uiState.value = _uiState.value.copy(showPermissionDialog = false)
+    }
+
+    fun openSettings() {
+        if (!hasUsageStatsPermission()) {
+            val intent = Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            application.startActivity(intent)
+        } else if (!hasOverlayPermission()) {
+            val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:${application.packageName}")).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            application.startActivity(intent)
+        }
+        dismissPermissionDialog()
+    }
+
+    private fun hasUsageStatsPermission(): Boolean {
+        val appOps = application.getSystemService(Context.APP_OPS_SERVICE) as AppOpsManager
+        val mode = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            appOps.unsafeCheckOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), application.packageName)
+        } else {
+            @Suppress("DEPRECATION")
+            appOps.checkOpNoThrow(AppOpsManager.OPSTR_GET_USAGE_STATS, Process.myUid(), application.packageName)
+        }
+        return mode == AppOpsManager.MODE_ALLOWED
+    }
+
+    private fun hasOverlayPermission(): Boolean {
+        return Settings.canDrawOverlays(application)
+    }
+
+    private fun updateBlockerService() {
+        val s = _uiState.value
+        val intent = Intent(application, FocusBlockerService::class.java)
+        if (s.isRunning && s.phase == FocusPhase.FOCUSING) {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                application.startForegroundService(intent)
+            } else {
+                application.startService(intent)
+            }
+        } else {
+            application.stopService(intent)
+        }
     }
 
     private fun startTimer() {
@@ -114,6 +175,7 @@ class FocusViewModel @Inject constructor(
             if (_uiState.value.isRunning) {
                 playSound()
                 onPhaseComplete()
+                updateBlockerService()
             }
         }
     }
@@ -169,6 +231,7 @@ class FocusViewModel @Inject constructor(
             remainingSeconds = 0,
             currentCycle = 1
         )
+        updateBlockerService()
     }
 
     fun pauseResume() {
@@ -180,6 +243,7 @@ class FocusViewModel @Inject constructor(
             _uiState.value = s.copy(isRunning = true)
             startTimer()
         }
+        updateBlockerService()
     }
 
     private fun playSound() {

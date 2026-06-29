@@ -60,6 +60,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.focusflow.R
 import com.example.focusflow.ui.components.BrazucaGuide
+import com.example.focusflow.ui.components.FocusFlowAlertDialog
 import com.example.focusflow.ui.components.FocusFlowCard
 import com.example.focusflow.ui.theme.Spacing
 import com.example.focusflow.viewmodel.FocusPhase
@@ -73,6 +74,16 @@ fun FocusScreen(
 ) {
     val state by viewModel.uiState.collectAsState()
     val view = LocalView.current
+
+    if (state.showPermissionDialog) {
+        FocusFlowAlertDialog(
+            title = "Permiso Requerido",
+            text = "Para bloquear aplicaciones distractoras, FocusFlow necesita acceso a las estadísticas de uso. Por favor, actívalo en la siguiente pantalla.",
+            confirmText = "IR A AJUSTES",
+            onConfirm = { viewModel.openSettings() },
+            onDismiss = { viewModel.dismissPermissionDialog() }
+        )
+    }
 
     Box(modifier = modifier.fillMaxSize()) {
         Column(
@@ -145,15 +156,6 @@ private fun IdleContent(
             Column {
                 SliderSetting("Enfoque", state.focusDuration, 10, 60, Icons.Default.Timer) {
                     viewModel.updateFocusDuration(it)
-                }
-                SliderSetting("Descanso", state.breakDuration, 1, 15, Icons.Default.Coffee) {
-                    viewModel.updateBreakDuration(it)
-                }
-                SliderSetting("Descanso largo", state.longBreakDuration, 10, 30, Icons.Default.NightsStay) {
-                    viewModel.updateLongBreak(it)
-                }
-                SliderSetting("Ciclos", state.totalCycles, 1, 6, Icons.Default.Refresh) {
-                    viewModel.updateCycles(it)
                 }
             }
         }
